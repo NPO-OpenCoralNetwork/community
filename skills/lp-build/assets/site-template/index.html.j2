@@ -1,0 +1,291 @@
+{#- D3「夕方の写真」のページ。中身は brand/<団体>/content.yaml、組み立ては scripts/build_site.py -#}
+{%- macro srcset(slot, ext) -%}
+{%- for w in photos[slot].widths %}assets/img/{{ slot }}-{{ w }}.{{ ext }} {{ w }}w{% if not loop.last %}, {% endif %}{% endfor -%}
+{%- endmacro -%}
+{%- macro focal_style(slot) -%}
+{%- if photos[slot].focal %} style="--focal: {{ photos[slot].focal }}"{% endif -%}
+{%- endmacro -%}
+{%- macro section_picture(slot, alt, sizes, indent) -%}
+{{ indent }}<picture>
+{%- if avif %}
+{{ indent }}  <source type="image/avif" srcset="{{ srcset(slot, 'avif') }}" sizes="{{ sizes }}">
+{%- endif %}
+{{ indent }}  <source type="image/webp" srcset="{{ srcset(slot, 'webp') }}" sizes="{{ sizes }}">
+{{ indent }}  <img class="photo" src="assets/img/{{ slot }}-{{ photos[slot].mid }}.jpg" srcset="{{ srcset(slot, 'jpg') }}" sizes="{{ sizes }}" width="{{ photos[slot].w }}" height="{{ photos[slot].h }}" alt="{{ alt | e }}" loading="lazy" decoding="async"{{ focal_style(slot) }}>
+{{ indent }}</picture>
+{%- endmacro -%}
+<!doctype html>
+<html lang="{{ c.site.lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{ c.site.title | e }}</title>
+<meta name="description" content="{{ c.site.description | e }}">
+<meta name="theme-color" content="{{ c.site.theme_color }}">
+<!-- 公開時は og:image を https:// から始まる絶対URLに書き換え、og:url(このページの絶対URL)を足してください -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{ c.site.og_title | e }}">
+<meta property="og:description" content="{{ c.site.og_description | e }}">
+<meta property="og:image" content="assets/img/og.jpg">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..600&amp;family=Murecho:wght@400..600&amp;display=swap">
+<link rel="stylesheet" href="assets/css/style.css">
+{%- if theme_css %}
+<link rel="stylesheet" href="assets/css/theme.css">
+{%- endif %}
+<script src="assets/js/main.js" defer></script>
+<!-- Google タグ(gtag.js)は README の「計測」の手順でここに貼ります -->
+</head>
+<body>
+<a class="skip" href="#main">本文へ移動</a>
+
+<header class="topbar">
+  <a class="mark" href="./">{% if c.org.mark_kind %}<span class="mark-kind">{{ c.org.mark_kind }}</span>{% endif %}{{ c.org.mark }}</a>
+  <nav class="nav" aria-label="ページ内のメニュー">
+{%- for n in c.nav %}
+    <a{% if n.phone is sameas false %} class="nav-x"{% endif %} href="{{ n.href }}">{{ n.label }}</a>
+{%- endfor %}
+  </nav>
+</header>
+
+<main id="main">
+
+  <!-- 1. 最初の画面 -->
+  <section class="hero" aria-labelledby="hero-title">
+    <picture>
+{%- if avif %}
+      <source media="(max-width: 760px)" type="image/avif" srcset="{{ srcset(c.hero.photo_phone, 'avif') }}" sizes="{{ hero_sizes_phone }}">
+{%- endif %}
+      <source media="(max-width: 760px)" type="image/webp" srcset="{{ srcset(c.hero.photo_phone, 'webp') }}" sizes="{{ hero_sizes_phone }}">
+      <source media="(max-width: 760px)" srcset="{{ srcset(c.hero.photo_phone, 'jpg') }}" sizes="{{ hero_sizes_phone }}">
+{%- if avif %}
+      <source type="image/avif" srcset="{{ srcset(c.hero.photo, 'avif') }}" sizes="{{ hero_sizes }}">
+{%- endif %}
+      <source type="image/webp" srcset="{{ srcset(c.hero.photo, 'webp') }}" sizes="{{ hero_sizes }}">
+      <img class="hero-img" src="assets/img/{{ c.hero.photo }}-{{ photos[c.hero.photo].mid }}.jpg" srcset="{{ srcset(c.hero.photo, 'jpg') }}" sizes="{{ hero_sizes }}" width="{{ photos[c.hero.photo].w }}" height="{{ photos[c.hero.photo].h }}" alt="{{ c.hero.alt | e }}" fetchpriority="high" style="--focal: {{ photos[c.hero.photo].focal or '50% 50%' }}; --focal-phone: {{ photos[c.hero.photo_phone].focal or '50% 50%' }}">
+    </picture>
+    <div class="shade" aria-hidden="true"></div>
+    <div class="hero-body">
+      <div class="hero-text">
+        <h1 id="hero-title">{% for line in c.hero.headline %}<span>{{ line | kern }}</span>{% endfor %}</h1>
+        <p class="sub">{{ c.hero.sub }}</p>
+        <a class="btn btn-light" href="#join" data-hero-cta>{{ c.cta }}<span class="arw" aria-hidden="true">→</span></a>
+      </div>
+      <p class="hero-cap">{{ c.hero.caption }}</p>
+    </div>
+  </section>
+{%- if c.mission %}
+
+  <!-- 2. 目的 -->
+  <section class="sec" aria-labelledby="mission-title">
+    <div class="wrap split mission">
+      <h2 class="h2" id="mission-title">{{ c.mission.heading }}</h2>
+      <div class="body">
+        <p class="stmt">{{ c.mission.statement }}</p>
+{%- if c.mission.operator %}
+        <p class="op">{{ c.mission.operator }}</p>
+{%- endif %}
+      </div>
+    </div>
+  </section>
+{%- endif %}
+{%- if c.meetup %}
+
+  <!-- 3. 次の集まり -->
+  <section class="sec" id="meetup" aria-labelledby="meetup-title">
+    <div class="wrap meet">
+      <figure>
+{{ section_picture(c.meetup.photo, c.meetup.alt, sizes_half, '        ') }}
+        <figcaption class="cap">{{ c.meetup.caption }}</figcaption>
+      </figure>
+      <div class="meet-text">
+        <h2 class="h2" id="meetup-title">{{ c.meetup.heading }}</h2>
+        <p>{{ c.meetup.intro }}</p>
+{%- if c.meetup.details %}
+        <dl class="details">
+{%- for d in c.meetup.details %}
+          <div><dt>{{ d.label }}</dt><dd>{{ d.value }}</dd></div>
+{%- endfor %}
+        </dl>
+{%- endif %}
+{%- for note in c.meetup.notes or [] %}
+        <p class="small">{{ note }}</p>
+{%- endfor %}
+        <a class="btn btn-dark" href="#join">{{ c.cta }}<span class="arw" aria-hidden="true">→</span></a>
+      </div>
+    </div>
+  </section>
+{%- endif %}
+{%- if c.activities %}
+
+  <!-- 4. 活動 -->
+  <section class="sec" id="acts" aria-labelledby="acts-title">
+    <div class="wrap">
+      <h2 class="h2 acts-head" id="acts-title">{{ c.activities.heading }}</h2>
+{%- for a in c.activities['items'] %}
+{%- set layout = act_layouts[loop.index0] %}
+
+      <div class="act{% if layout == 'flip' %} flip{% elif layout == 'wide' %} wide{% endif %}">
+        <figure>
+{{ section_picture(a.photo, a.alt, sizes_wide if layout == 'wide' else sizes_half, '          ') }}
+          <figcaption class="cap">{{ a.caption }}</figcaption>
+        </figure>
+        <div class="act-text">
+          <h3>{{ a.heading }}</h3>
+          <p>{{ a.body }}</p>
+        </div>
+      </div>
+{%- endfor %}
+    </div>
+  </section>
+{%- endif %}
+{%- if c.steps %}
+
+  <!-- 5. 参加のしかた -->
+  <section class="sec" aria-labelledby="steps-title">
+    <div class="wrap split">
+      <h2 class="h2" id="steps-title">{{ c.steps.heading }}</h2>
+      <ol class="steps body">
+{%- for s in c.steps['items'] %}
+        <li><h3>{{ s.title }}</h3><p class="small">{{ s.text }}</p></li>
+{%- endfor %}
+      </ol>
+    </div>
+  </section>
+{%- endif %}
+{%- if c.promises %}
+
+  <!-- 6. 運営の約束 -->
+  <section class="sec" aria-labelledby="promise-title">
+    <div class="wrap split promise">
+      <h2 class="h2" id="promise-title">{{ c.promises.heading }}</h2>
+      <div class="body">
+        <ul>
+{%- for p in c.promises['items'] %}
+          <li>{{ p }}</li>
+{%- endfor %}
+        </ul>
+{%- if c.promises.voice %}
+        <figure class="voice">
+          <blockquote><p>{{ c.promises.voice.text }}</p></blockquote>
+          <figcaption>{{ c.promises.voice.signature }}</figcaption>
+        </figure>
+{%- endif %}
+      </div>
+    </div>
+  </section>
+{%- endif %}
+{%- if c.faq %}
+
+  <!-- 7. よくある質問 -->
+  <section class="sec" aria-labelledby="faq-title">
+    <div class="wrap split faq">
+      <h2 class="h2" id="faq-title">{{ c.faq.heading }}</h2>
+      <div class="qa body">
+{%- for f in c.faq['items'] %}
+        <details{% if f.open %} open{% endif %}><summary>{{ f.q }}</summary><p>{{ f.a }}</p></details>
+{%- endfor %}
+      </div>
+    </div>
+  </section>
+{%- endif %}
+
+  <!-- 8. 参加登録 -->
+  <section class="sec join" id="join" aria-labelledby="join-title">
+    <div class="wrap join-grid">
+      <div class="join-lead">
+        <h2 class="h2" id="join-title">{{ c.join.heading }}</h2>
+        <p class="big">{{ c.join.lead }}</p>
+{%- if c.join.sub %}
+        <p class="small">{{ c.join.sub }}</p>
+{%- endif %}
+      </div>
+
+      <!--
+        data-endpoint : 送信先のURL(Formspree、Google Apps Script など)。空のままだと送信せず、確認用の動きだけをします。
+        data-redirect : 送信できたあとに移るページ。広告のコンバージョンはこのページで数えます。
+      -->
+      <form class="form" action="{{ c.join.endpoint or '#' }}" method="post" data-signup data-endpoint="{{ c.join.endpoint or '' }}" data-redirect="{{ c.join.redirect or '' }}">
+        <div class="field">
+          <label for="f-name">{{ c.join.name_label }}{% if c.join.name_hint %}<span class="req">{{ c.join.name_hint }}</span>{% endif %}</label>
+          <input id="f-name" type="text" name="nickname" autocomplete="nickname" maxlength="50" required aria-describedby="f-name-err">
+          <p class="err" id="f-name-err" aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <label for="f-mail">{{ c.join.email_label }}</label>
+          <input id="f-mail" type="email" name="email" autocomplete="email" inputmode="email" maxlength="254" required aria-describedby="f-mail-err">
+          <p class="err" id="f-mail-err" aria-live="polite"></p>
+        </div>
+{%- if c.join.interests %}
+        <fieldset class="field">
+          <legend>{{ c.join.interest_legend }}{% if c.join.interest_hint %}<span class="req">{{ c.join.interest_hint }}</span>{% endif %}</legend>
+          <div class="opts">
+{%- for i in c.join.interests %}
+            <label class="opt"><input type="checkbox" name="interest" value="{{ i | striptags | e }}">{{ i }}</label>
+{%- endfor %}
+          </div>
+        </fieldset>
+{%- endif %}
+{%- if c.join.photo_consent %}
+        <label class="consent"><input type="checkbox" name="photo_consent" value="yes"><span>{{ c.join.photo_consent }}</span></label>
+{%- endif %}
+        <!-- ボット対策の見えない欄。人は入力しません -->
+        <div class="visually-hidden" aria-hidden="true">
+          <label for="f-web">ウェブサイト</label>
+          <input id="f-web" type="text" name="website" tabindex="-1" autocomplete="off">
+        </div>
+{%- if c.join.note %}
+        <p class="note">{{ c.join.note }}</p>
+{%- endif %}
+        <button class="btn btn-dark" type="submit">{{ c.cta }}<span class="arw" aria-hidden="true">→</span></button>
+        <p class="form-status" role="status" aria-live="polite"></p>
+      </form>
+
+      <div class="done" id="join-done" hidden tabindex="-1">
+        <h3>{{ c.join.done_heading }}</h3>
+        <p>{{ c.join.done_text }}</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="sticky-cta" data-sticky-cta aria-hidden="true">
+    <a class="btn btn-dark" href="#join" tabindex="-1">{{ c.cta }}<span class="arw" aria-hidden="true">→</span></a>
+  </div>
+
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div class="foot-row">
+      <div>
+        <a class="mark" href="./">{{ c.org.mark }}</a>
+        <p>{{ c.org.footer_lines | join('<br>') }}</p>
+      </div>
+      <nav aria-label="団体の情報">
+{%- for l in c.org.links %}
+        <a href="{{ l.href }}">{{ l.label }}</a>
+{%- endfor %}
+      </nav>
+    </div>
+{%- if c.credits and c.credits['items'] %}
+    <!-- 仮置きの写真を本番の写真に差し替えたら、content.yaml の credits を空にしてください -->
+    <details class="credits">
+      <summary>写真について</summary>
+      <ul>
+{%- for cr in c.credits['items'] %}
+        <li>{{ cr.use }}：{{ cr.author }}{% for wk in cr.works %}「<a href="{{ wk.url }}">{{ wk.title }}</a>」{% endfor %}<a href="{{ cr.license_url }}">{{ cr.license }}</a></li>
+{%- endfor %}
+{%- if c.credits.note %}
+        <li>{{ c.credits.note }}</li>
+{%- endif %}
+      </ul>
+    </details>
+{%- endif %}
+  </div>
+</footer>
+
+</body>
+</html>

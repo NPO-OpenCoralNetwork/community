@@ -1,0 +1,189 @@
+# 参加登録ページ(D3「夕方の写真」)の中身
+#
+# - 文面の決まり: skills/lp-build/references/copy-rules.md
+# - 事実は brand/opencoral/facts.md にあるものだけを使う
+# - 決まっていないことは書かないか、[日時] のように角括弧で示す(次の集まりの詳細とよくある質問だけ)
+# - 文字列の中では次の HTML が使える
+#     <span class="nw">…</span>  改行させたくない語
+#     <wbr>                       改行してよい位置
+#     <br>                        改行
+#     <a href="…">…</a>          リンク
+# - 書き換えたら: python3 skills/lp-build/scripts/build_site.py --brand brand/opencoral --out sites/opencoral-lp
+
+site:
+  lang: ja
+  title: "AIで、まちの課題を仲間と見つけて解く。| NPO法人 Open Coral Network"
+  description: "市民がAIを道具に、まちの身近な課題を見つけ、仲間と解いていくコミュニティです。AIの勉強会、まちの課題を解く試み、居場所づくり。参加登録は無料です。"
+  og_title: "AIで、まちの課題を仲間と見つけて解く。"
+  og_description: "市民がAIを道具に、まちの身近な課題を見つけ、仲間と解いていくコミュニティです。参加登録は無料です。"
+  theme_color: "#ecebe8"
+
+org:
+  mark: Open Coral Network          # ページ上部とフッターのロゴの文字
+  mark_kind: NPO法人                 # ロゴの前に小さく出す文字。空なら出さない
+  footer_lines:
+    - 特定非営利活動法人 <span class="nw">Open Coral Network</span>
+    - 法人番号 9230005009484
+  links:
+    - { label: 団体について, href: "#" }
+    - { label: プライバシーポリシー, href: "#" }
+    - { label: お問い合わせ, href: "#" }
+
+# ページの主な行動は1つだけ。ボタンの文言はすべてこれを使う
+cta: 無料で参加登録する
+
+nav:
+  - { label: 次の集まり, href: "#meetup", phone: false }
+  - { label: 活動, href: "#acts", phone: false }
+  - { label: 参加登録, href: "#join" }
+
+hero:
+  # 1行は全角10字まで(スマホ幅 320px でも2行に収まる長さ)
+  headline:
+    - AIで、まちの課題を
+    - 仲間と見つけて解く。
+  sub: 仕事でも家でもない場所で、話して、小さく試す集まりです。<span class="nw">経歴は問いません。</span>
+  caption: 集まりの会場、夕方。
+  photo: hero-h
+  photo_phone: hero-v
+  alt: 夕方の会場。ペンダント照明の下、本棚の前の長机で数人が作業をしている
+
+mission:
+  heading: 目的
+  statement: 市民がAIを道具に、まちの身近な課題を見つけ、仲間と解いていくコミュニティです。話せる居場所づくりにも取り組みます。貢献した人に報酬を払う仕組みをつくり、善意だけに頼らずに続けます。
+  operator: 運営：特定非営利活動法人 <span class="nw">Open Coral Network</span>
+
+meetup:
+  heading: 次の集まり
+  intro: まちや暮らしで気になっていることを持ち寄り、AIで整理しながら話す会です。
+  details:
+    - { label: 日時, value: "[日時]" }
+    - { label: 会場, value: "[会場]" }
+    - { label: 参加費, value: "[参加費]" }
+  notes:
+    - AIをこれから試したい人、何か一つ始めてみたい人、話せる仲間を探している人に向けた集まりです。専門知識や経歴は問いません。
+    - 持ち物は、気になっていることを1つ。スマホかパソコンがあれば、AIをその場で一緒に試せます。オンラインで参加できるかどうかは、日程と一緒にお知らせします。
+    - 参加登録（無料）をすると、この集まりの案内と参加者チャットへの招待がメールで届きます。
+  photo: present
+  alt: 部屋の前で一人が話し、ノートパソコンを開いた参加者が聞いている
+  caption: 集まりの部屋、午後。
+
+activities:
+  heading: 活動
+  # 写真と文を左右交互に並べる。項目が3つ以上の奇数なら、最後の項目は横長(21:9)で大きく見せる
+  items:
+    - heading: AIの勉強会
+      body: AIへの指示の書き方や、AIエージェントの使い方を、その場で動かしながら学びます。自分たちでつくった道具も使います。アプリとAIエージェントは、これまでに15以上つくりました。
+      photo: work
+      alt: 暖かい照明の長机で、参加者がノートパソコンに向かっている
+      caption: 勉強会の長机、午後。
+    - heading: まちの課題を解く試み
+      body: 気になる課題をAIで整理し、何をするかは人が話し合って決めます。決めたことを小さくつくって試し、うまくいったかを一緒に確かめます。
+      photo: town
+      alt: 日の暮れの商店街。灯りのついた店が奥へ続いている
+      caption: 商店街、日の暮れ。
+    - heading: 居場所づくり
+      body: 仕事でも家でもない、ふらっと寄って話せる場所を、<span class="nw">参加する人と</span>一緒につくります。作業をしに来るだけ、話をしに来るだけでも歓迎です。
+      photo: talk
+      alt: 夜の部屋。窓ぎわの長机を囲んで、十人ほどがパソコンやお茶を前に話している
+      caption: 窓ぎわの長机、夜。
+
+steps:
+  heading: 参加のしかた
+  items:
+    - title: このページで参加登録する
+      text: お名前とメールアドレスだけで登録できます。
+    - title: チャットで自己紹介する
+      text: 登録後にメールで届く招待から参加者のチャットに入り、興味のあることや得意なこと、参加のきっかけを書きます。
+    - title: できる作業に手を挙げる
+      text: イベントの受付や資料の校正、AIへの指示文を試す作業など、小さなことから始められます。ノルマや決まった役割はありません。
+
+promises:
+  heading: 運営の約束
+  items:
+    - AIは整理を手伝う道具で、何をするかを決めるのは人です。
+    - 報酬が出る仕事は、条件を書面で示し、期日までに払います。
+    - 相談の内容や参加者のデータを、AIの学習には使いません。
+  voice:
+    text: 一人ひとりの頑張りだけに頼らず、挑戦できる場をつくりたいと考えています。長く話し合うより、まず一つ形にしてみる場にします。
+    signature: 運営チーム
+
+faq:
+  heading: よくある質問
+  items:
+    - q: AIを使ったことがなくても参加できますか。
+      a: 参加できます。集まりでは、その場で一緒にAIを動かしてみるので、<span class="nw">はじめてでも</span>大丈夫です。
+      open: true
+    - q: 費用はかかりますか。
+      a: 参加登録は無料です。次の集まりの参加費は[参加費]です（<a href="#meetup">次の集まり</a>）。
+    - q: 参加をやめることはできますか。
+      a: いつでもやめられます。出入りは自由です。
+
+join:
+  heading: 参加登録
+  lead: 必要なのは、お名前と<wbr>メールアドレス<wbr>だけです。
+  sub: 登録すると、参加者チャットへの招待がメールで届きます。
+  endpoint: ""                 # 送信先の URL。空なら送信せず、確認用の動きだけをする
+  redirect: thanks.html        # 送信できたあとに移るページ(コンバージョンを数える)
+  name_label: お名前
+  name_hint: ニックネームでもかまいません
+  email_label: メールアドレス
+  interest_legend: 関心のあること
+  interest_hint: 任意・いくつでも
+  interests:
+    - AIの使い方を学びたい
+    - まちの課題に取り組みたい
+    - 何か一つ始めてみたい
+    - 話せる仲間や居場所がほしい
+  photo_consent: <span class="nw">集まりの記録写真に</span><span class="nw">写ってもかまいません<span class="req">任意</span></span><br>顔がはっきり写る写真をサイトや広告に使うときは、あらためて書面で同意をいただきます。チェックしなくても参加できます。
+  note: 相談の内容や参加者のデータは、AIの学習に使いません（<a href="#">プライバシーポリシー</a>）。
+  done_heading: 参加登録を受け付けました。
+  done_text: 次の集まりの日程と、参加者のチャットへの招待を、メールでお送りします。
+
+thanks:
+  title: 参加登録を受け付けました | NPO法人 Open Coral Network
+  heading: 参加登録を受け付けました。
+  text: 次の集まりの日程と、参加者のチャットへの招待を、メールでお送りします。
+  small: メールが届かないときは、迷惑メールのフォルダもご確認ください。
+  back: トップページに戻る
+
+# brand/opencoral/photos/ の写真。幅ごとに AVIF・WebP・JPEG を書き出す
+# focal は写真の切り抜きで残したい位置(CSS の object-position)
+photos:
+  hero-h: { file: hero-h.jpg, widths: [1280, 1920, 2200], focal: "42% 62%" }
+  hero-v: { file: hero-v.jpg, widths: [640, 828], quality: 70, focal: "50% 50%" }
+  present: { file: present.jpg, widths: [800, 1200, 1600] }
+  work: { file: work.jpg, widths: [800, 1200, 1600] }
+  town: { file: town.jpg, widths: [800, 1200, 1600] }
+  talk: { file: talk.jpg, widths: [800, 1200, 1600], focal: "50% 55%" }
+og_image: { photo: hero-h, y: 0.55 }   # SNS 用の 1200×630。y は切り出す縦位置(0=上、1=下)
+
+# 仮置き写真のクレジット。本番の写真に差し替えたら items を空にする
+credits:
+  note: いずれも色調補正と切り抜きをしています。CC BY-SA の写真を加工したものは、同じ CC BY-SA で提供します。
+  items:
+    - use: 最初の画面
+      author: James Cridland
+      works:
+        - { title: Brooklyn Parlour, url: "https://www.flickr.com/photos/18378655@N00/4247438362" }
+      license: CC BY 2.0
+      license_url: https://creativecommons.org/licenses/by/2.0/
+    - use: 集まりの部屋・勉強会の長机
+      author: kirby wu
+      works:
+        - { title: 零時政府新年松 DSC 1780, url: "https://commons.wikimedia.org/wiki/File:%E9%9B%B6%E6%99%82%E6%94%BF%E5%BA%9C%E6%96%B0%E5%B9%B4%E6%9D%BE_DSC_1780_(11819272675).jpg" }
+        - { title: DSC 1720, url: "https://commons.wikimedia.org/wiki/File:%E9%9B%B6%E6%99%82%E6%94%BF%E5%BA%9C%E6%96%B0%E5%B9%B4%E6%9D%BE_DSC_1720_(11819572153).jpg" }
+      license: CC BY 2.0
+      license_url: https://creativecommons.org/licenses/by/2.0/
+    - use: 商店街
+      author: Doricono
+      works:
+        - { title: "Twilight Yanaka, Tokyo", url: "https://commons.wikimedia.org/wiki/File:Twilight_Yanaka,_Tokyo.jpg" }
+      license: CC BY-SA 3.0
+      license_url: https://creativecommons.org/licenses/by-sa/3.0/
+    - use: 窓ぎわの長机
+      author: Mitch Altman
+      works:
+        - { title: "Tokyo, Jul-2016", url: "https://www.flickr.com/photos/maltman23/28345732315/" }
+      license: CC BY-SA 2.0
+      license_url: https://creativecommons.org/licenses/by-sa/2.0/

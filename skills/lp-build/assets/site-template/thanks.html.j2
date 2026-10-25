@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="{{ c.site.lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{ c.thanks.title | e }}</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="{{ c.site.theme_color }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..600&amp;family=Murecho:wght@400..600&amp;display=swap">
+<link rel="stylesheet" href="assets/css/style.css">
+{%- if theme_css %}
+<link rel="stylesheet" href="assets/css/theme.css">
+{%- endif %}
+<!-- Google タグ(gtag.js)を README の「計測」の手順でここに貼り、その下に Google 広告のコンバージョンタグ(イベント スニペット)を貼ります -->
+</head>
+<body class="page-plain">
+
+<header class="topbar">
+  <a class="mark" href="./">{% if c.org.mark_kind %}<span class="mark-kind">{{ c.org.mark_kind }}</span>{% endif %}{{ c.org.mark }}</a>
+</header>
+
+<main id="main" class="thanks">
+  <div class="wrap">
+    <div class="body">
+      <h1>{{ c.thanks.heading }}</h1>
+      <p>{{ c.thanks.text }}</p>
+{%- if c.thanks.small %}
+      <p class="small">{{ c.thanks.small }}</p>
+{%- endif %}
+      <p><a href="./">{{ c.thanks.back }}</a></p>
+    </div>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-row">
+    <div>
+      <a class="mark" href="./">{{ c.org.mark }}</a>
+      <p>{{ c.org.footer_lines | join('<br>') }}</p>
+    </div>
+    <nav aria-label="団体の情報">
+{%- for l in c.org.links %}
+      <a href="{{ l.href }}">{{ l.label }}</a>
+{%- endfor %}
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

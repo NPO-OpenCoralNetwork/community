@@ -1,0 +1,13 @@
+{
+  "name": "opencoral-community",
+  "private": true,
+  "description": "design-review のスクリプト(スクリーンショットと点検)に使う Playwright",
+  "scripts": {
+    "build": "python3 skills/lp-build/scripts/build_site.py --brand brand/opencoral --out sites/opencoral-lp",
+    "serve": "python3 -m http.server 8000 --directory sites/opencoral-lp",
+    "review": "node skills/design-review/scripts/shoot.js http://localhost:8000/ review/shots && node skills/design-review/scripts/audit.js http://localhost:8000/ review && node skills/design-review/scripts/form_test.js http://localhost:8000/ review"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

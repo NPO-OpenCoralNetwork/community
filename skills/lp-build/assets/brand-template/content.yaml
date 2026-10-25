@@ -1,0 +1,144 @@
+# 参加登録ページの中身(新しい団体用のひな形)
+#
+# 1. facts.md に、出典つきで事実を書く
+# 2. このファイルの TODO をすべて書き換える(書き方: skills/lp-build/references/content-guide.md)
+# 3. photos/ に写真を置き、photos と credits を書く(決まり: skills/lp-build/references/photo-rules.md)
+# 4. python3 skills/lp-build/scripts/build_site.py --brand brand/<団体> --out sites/<団体>-lp
+#
+# 文字列の中では <span class="nw">…</span>、<wbr>、<br>、<a href="…"> が使える
+
+site:
+  lang: ja
+  title: "TODO: 最初の画面の見出し | 団体名"
+  description: "TODO: 目的を1〜2文で"
+  og_title: "TODO: 最初の画面の見出し"
+  og_description: "TODO: 目的を1文で"
+  theme_color: "#ecebe8"
+
+org:
+  mark: TODO 団体名(ロゴの文字)
+  mark_kind: NPO法人
+  footer_lines:
+    - TODO 正式名称
+    - TODO 法人番号
+  links:
+    - { label: 団体について, href: "#" }
+    - { label: プライバシーポリシー, href: "#" }
+    - { label: お問い合わせ, href: "#" }
+
+cta: 無料で参加登録する
+
+nav:
+  - { label: 次の集まり, href: "#meetup", phone: false }
+  - { label: 活動, href: "#acts", phone: false }
+  - { label: 参加登録, href: "#join" }
+
+hero:
+  headline:              # 1〜2行。1行は全角10字まで
+    - TODO 1行目
+    - TODO 2行目
+  sub: TODO 何の集まりか、だれ向けか
+  caption: TODO 場所の種類、時間帯。
+  photo: hero-h
+  photo_phone: hero-v
+  alt: TODO 写っている内容
+
+mission:
+  heading: 目的
+  statement: TODO 目的を2〜3文で
+  operator: TODO 運営：正式名称
+
+meetup:
+  heading: 次の集まり
+  intro: TODO 何をする会か
+  details:
+    - { label: 日時, value: "[日時]" }
+    - { label: 会場, value: "[会場]" }
+    - { label: 参加費, value: "[参加費]" }
+  notes:
+    - TODO だれ向けか
+    - TODO 持ち物
+    - TODO 登録すると何が届くか
+  photo: present
+  alt: TODO 写っている内容
+  caption: TODO 場所の種類、時間帯。
+
+activities:
+  heading: 活動
+  items:
+    - heading: TODO 活動の名前
+      body: TODO 2文前後
+      photo: work
+      alt: TODO 写っている内容
+      caption: TODO 場所の種類、時間帯。
+    - heading: TODO 活動の名前
+      body: TODO 2文前後
+      photo: town
+      alt: TODO 写っている内容
+      caption: TODO 場所の種類、時間帯。
+    - heading: TODO 活動の名前
+      body: TODO 2文前後
+      photo: talk
+      alt: TODO 写っている内容
+      caption: TODO 場所の種類、時間帯。
+
+steps:
+  heading: 参加のしかた
+  items:
+    - title: このページで参加登録する
+      text: お名前とメールアドレスだけで登録できます。
+    - title: TODO 次の段
+      text: TODO 説明
+
+promises:
+  heading: 運営の約束
+  items:
+    - TODO 約束を1文で
+  voice:
+    text: TODO 運営の言葉を2文ほど
+    signature: 運営チーム
+
+faq:
+  heading: よくある質問
+  items:
+    - q: TODO 来た人がためらう点
+      a: TODO 出典のある答え
+      open: true
+
+join:
+  heading: 参加登録
+  lead: 必要なのは、お名前と<wbr>メールアドレス<wbr>だけです。
+  sub: TODO 登録すると何が届くか
+  endpoint: ""
+  redirect: thanks.html
+  name_label: お名前
+  name_hint: ニックネームでもかまいません
+  email_label: メールアドレス
+  interest_legend: 関心のあること
+  interest_hint: 任意・いくつでも
+  interests:
+    - TODO 広告グループに合わせた選択肢
+  photo_consent: <span class="nw">集まりの記録写真に</span><span class="nw">写ってもかまいません<span class="req">任意</span></span><br>顔がはっきり写る写真をサイトや広告に使うときは、あらためて書面で同意をいただきます。チェックしなくても参加できます。
+  note: TODO データの扱いの要約（<a href="#">プライバシーポリシー</a>）。
+  done_heading: 参加登録を受け付けました。
+  done_text: TODO 次に何が届くか
+
+thanks:
+  title: 参加登録を受け付けました | TODO 団体名
+  heading: 参加登録を受け付けました。
+  text: TODO 次に何が届くか
+  small: メールが届かないときは、迷惑メールのフォルダもご確認ください。
+  back: トップページに戻る
+
+photos:
+  hero-h: { file: hero-h.jpg, widths: [1280, 1920, 2200] }
+  hero-v: { file: hero-v.jpg, widths: [640, 828], quality: 70 }
+  present: { file: present.jpg, widths: [800, 1200, 1600] }
+  work: { file: work.jpg, widths: [800, 1200, 1600] }
+  town: { file: town.jpg, widths: [800, 1200, 1600] }
+  talk: { file: talk.jpg, widths: [800, 1200, 1600] }
+og_image: { photo: hero-h, y: 0.55 }
+
+credits:
+  note: ""
+  items: []

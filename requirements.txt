@@ -1,0 +1,5 @@
+# lp-build のスクリプトに必要なもの
+pillow>=11.2   # AVIF の書き出しに 11.2 以上が必要
+pyyaml>=6.0
+jinja2>=3.1
+numpy>=1.26    # 写真の色調をそろえる images.py grade で使う
