@@ -1,9 +1,10 @@
 # 参加登録ページの中身(新しい団体用のひな形)
 #
 # 1. facts.md に、出典つきで事実を書く
-# 2. このファイルの TODO をすべて書き換える(書き方: skills/lp-build/references/content-guide.md)
-# 3. photos/ に写真を置き、photos と credits を書く(決まり: skills/lp-build/references/photo-rules.md)
-# 4. python3 skills/lp-build/scripts/build_site.py --brand brand/<団体> --out sites/<団体>-lp
+# 2. このファイルの TODO をすべて書き換える(書き方: lp-build スキルの references/content-guide.md)
+# 3. photos/ に写真を置き、photos と credits を書く(決まり: lp-build スキルの references/photo-rules.md)
+# 4. 組み立てる: python3 <lp-build>/scripts/build_site.py --brand brand/<団体> --out sites/<団体>-lp
+#    (<lp-build> は lp-build スキルのフォルダ。AI エージェントには「ページを組み立てて」と頼めばよい)
 #
 # 文字列の中では <span class="nw">…</span>、<wbr>、<br>、<a href="…"> が使える
 

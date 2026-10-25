@@ -9,4 +9,4 @@
 
 元のページは非公開です。共有するときは、各ページの Share から相手を追加します。
 
-レポートの内容のうち、ページづくりに使う決まりは、スキルの手引き(`skills/lp-build/references/`、`skills/design-review/references/`)と団体の資料(`brand/opencoral/`)に移してあります。レポートを直したら、そちらも合わせて直します。
+レポートの内容のうち、ページづくりに使う決まりは、スキルの手引き(`plugins/lp-designer/skills/lp-build/references/`、`plugins/lp-designer/skills/design-review/references/`)と団体の資料(`brand/opencoral/`)に移してあります。レポートを直したら、そちらも合わせて直します。

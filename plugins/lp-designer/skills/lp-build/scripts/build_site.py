@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """brand/<団体>/content.yaml と写真から、参加登録ページ一式を組み立てる。
 
-使い方(リポジトリのルートで):
-  python3 skills/lp-build/scripts/build_site.py --brand brand/opencoral --out sites/opencoral-lp
+使い方(ページを置くリポジトリのルートで。<lp-build> は lp-build スキルのフォルダ):
+  python3 <lp-build>/scripts/build_site.py --brand brand/opencoral --out sites/opencoral-lp
 
   --skip-images   書き出し済みの写真を使い回す(文面だけ直したとき。足りない写真だけ書き出す)
   --no-avif       AVIF を書き出さない(Pillow が AVIF に対応していないとき)
@@ -412,8 +412,14 @@ def build(brand: Path, out: Path, skip_images: bool, use_avif: bool) -> dict:
     photo_rows = [{"slot": f"{slot}-*", "where": where.get(slot, "(使っていない)"),
                    "widths": "・".join(map(str, p["widths"]))} for slot, p in photos.items()]
 
+    # README に書く組み立てのコマンド。スキルがこのリポジトリの中にあれば相対パス、
+    # プラグインとして別の場所に入っていれば <lp-build> と書く
+    script = SKILL_DIR / "scripts" / "build_site.py"
+    build_script_local = _inside_cwd(script)
     readme = env.get_template("README.md.j2").render(
         **ctx, brand_name=brand.name, out_rel=_rel(out), out_name=out.name,
+        build_script=_rel(script) if build_script_local else "<lp-build>/scripts/build_site.py",
+        build_script_local=build_script_local,
         placeholders=placeholders, hash_links=hash_links, photo_rows=photo_rows, unconfirmed=unconfirmed,
         credits=bool((c.get("credits") or {}).get("items")))
     (out / "README.md").write_text(readme, encoding="utf-8")
@@ -443,6 +449,14 @@ def _wrap(v):
     if isinstance(v, list):
         return [_wrap(x) for x in v]
     return v
+
+
+def _inside_cwd(p: Path) -> bool:
+    try:
+        p.resolve().relative_to(Path.cwd().resolve())
+        return True
+    except ValueError:
+        return False
 
 
 def _rel(p: Path) -> str:

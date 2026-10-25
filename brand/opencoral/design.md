@@ -29,14 +29,14 @@
 
 - 和文は Murecho、欧文と数字は Geist。太さは本文 400、見出し 600。
 - 丸ゴシック、明朝の太字、等幅書体は使わない(却下した3案の失敗)。
-- 細かい決まりは [skills/lp-build/references/jp-typography.md](../../skills/lp-build/references/jp-typography.md)。
+- 細かい決まりは [lp-build の jp-typography.md](../../plugins/lp-designer/skills/lp-build/references/jp-typography.md)。
 
 ## 写真
 
 - いまの写真は仮置き(CC ライセンスの公開写真に色調をそろえたもの)。クレジットは [photos/CREDITS.md](photos/CREDITS.md)。
 - 広告を出す前に、初回の撮影で次をそろえる。最初の画面の横と縦(夕方の会場、2〜4人が作業か会話)、勉強会の手元、少人数の会話、画面を見せて話す人、まちの通り。
 - 運営者の肖像は、本人の写真を撮るまで使わない。
-- 撮り方と同意の決まりは [skills/lp-build/references/photo-rules.md](../../skills/lp-build/references/photo-rules.md)。
+- 撮り方と同意の決まりは [lp-build の photo-rules.md](../../plugins/lp-designer/skills/lp-build/references/photo-rules.md)。
 
 ## やらないこと
 

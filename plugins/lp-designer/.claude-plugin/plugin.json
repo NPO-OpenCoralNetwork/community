@@ -1,0 +1,13 @@
+{
+  "name": "lp-designer",
+  "displayName": "参加登録ページのデザイナー",
+  "version": "0.1.0",
+  "description": "写真を主役にした参加登録ページ（デザイン D3「夕方の写真」）を、団体の事実と写真から組み立て（lp-build）、スクリーンショットと自動の点検で確かめる（design-review）スキル。",
+  "author": {
+    "name": "特定非営利活動法人 Open Coral Network",
+    "url": "https://github.com/NPO-OpenCoralNetwork"
+  },
+  "homepage": "https://github.com/NPO-OpenCoralNetwork/community/tree/main/plugins/lp-designer",
+  "repository": "https://github.com/NPO-OpenCoralNetwork/community",
+  "keywords": ["landing-page", "design", "review", "japanese", "google-ad-grants"]
+}

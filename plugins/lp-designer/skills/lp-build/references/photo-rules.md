@@ -25,8 +25,10 @@ D3 は MIDORI.so のように、実在の場所と人の写真を主役にする
 全部の写真に同じ処理を1つだけかけます。写真ごとに白の基準を合わせ直しません。
 
 ```sh
-python3 skills/lp-build/scripts/images.py grade 元の写真.jpg brand/<団体>/photos/<名前>.jpg
+python3 <lp-build>/scripts/images.py grade 元の写真.jpg brand/<団体>/photos/<名前>.jpg
 ```
+
+`<lp-build>` は、lp-build スキルのフォルダです。
 
 処理の中身は、彩度を下げる(黄〜橙と緑はさらに下げる)、明るいところを少し暖かく・暗いところを少し冷たくする、黒を少し持ち上げる、の3つです。それでも1枚だけ冷たい・明るすぎるときは、その写真だけ赤を少し上げて青を少し下げます(例:ImageMagick の `-channel R -evaluate multiply 1.08 -channel B -evaluate multiply 0.84`)。
 

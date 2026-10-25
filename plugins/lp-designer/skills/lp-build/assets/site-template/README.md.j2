@@ -2,11 +2,15 @@
 
 Google Ad Grants の検索広告から来た人に、無料の参加登録をしてもらうための1ページのサイトです。デザインは D3「夕方の写真」(写真を主役にしたページ)です。
 
-このフォルダは `brand/{{ brand_name }}/content.yaml` から組み立てたものです。文面や写真を変えるときは、HTML を直接直さず、`content.yaml` を直して組み立て直します。
+このフォルダは `brand/{{ brand_name }}/content.yaml` から組み立てたものです。文面や写真を変えるときは、HTML を直接直さず、`content.yaml` を直して組み立て直します。AI エージェントには「ページを組み立て直して」と頼みます(lp-build スキル)。手で組み立てるときは、次を実行します。
 
 ```sh
-python3 skills/lp-build/scripts/build_site.py --brand brand/{{ brand_name }} --out {{ out_rel }}
+python3 {{ build_script }} --brand brand/{{ brand_name }} --out {{ out_rel }}
 ```
+{%- if not build_script_local %}
+
+`<lp-build>` は、lp-build スキルのフォルダです(プラグイン lp-designer に入っています)。
+{%- endif %}
 
 ## 中身
 

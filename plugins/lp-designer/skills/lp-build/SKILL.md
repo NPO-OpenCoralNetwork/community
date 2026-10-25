@@ -11,7 +11,7 @@ metadata:
 
 広告から来た人に無料の参加登録をしてもらう1ページのサイトを、`brand/<団体>/` の中身から組み立てます。見た目はデザインリサーチで決めた D3「夕方の写真」です。
 
-このスキルの中のファイルは、この `SKILL.md` があるフォルダからの相対パスで書いています(Claude Code では `${CLAUDE_SKILL_DIR}`、このリポジトリでは `skills/lp-build/`)。
+このスキルのフォルダは `${CLAUDE_SKILL_DIR}` です。Claude Code では、読み込むときに実際のパスに置き換わります。置き換わっていないときは、この `SKILL.md` があるフォルダに読み替えます。スキルの中のファイルは、このフォルダからの相対パスで書いています。参考資料やひな形に出てくる `<lp-build>` も、このフォルダのことです。
 
 ## 先に読むもの
 
@@ -36,13 +36,13 @@ metadata:
    - 決まっていない事実(日時、会場、参加費、名前など)
    - 使う写真と、写る人の同意
    - 公開すること
-2. **新しい団体なら、フォルダを用意する。** `assets/brand-template/` を `brand/<団体>/` にコピーし、`facts.md` に出典つきで事実を書いてから、`content.yaml` の TODO を書き換える。
+2. **新しい団体なら、フォルダを用意する。** `${CLAUDE_SKILL_DIR}/assets/brand-template/` を `brand/<団体>/` にコピーし、`facts.md` に出典つきで事実を書いてから、`content.yaml` の TODO を書き換える。
 3. **`content.yaml` を直す。** 事実は `facts.md` の表にあるものだけを使う。表にない事実が要るときは、出典を確かめて `facts.md` に行を足してから使う。
-4. **写真を差し替えるときは**、`scripts/images.py grade` で色調をそろえて `brand/<団体>/photos/` に置き、`content.yaml` の `alt`、`caption`、`focal`、`credits` を写真に合わせて直す。
+4. **写真を差し替えるときは**、`python3 "${CLAUDE_SKILL_DIR}/scripts/images.py" grade 元の写真.jpg brand/<団体>/photos/<名前>.jpg` で色調をそろえて置き、`content.yaml` の `alt`、`caption`、`focal`、`credits` を写真に合わせて直す。
 5. **組み立てる。**
 
    ```sh
-   python3 skills/lp-build/scripts/build_site.py --brand brand/<団体> --out sites/<団体>-lp
+   python3 "${CLAUDE_SKILL_DIR}/scripts/build_site.py" --brand brand/<団体> --out sites/<団体>-lp
    ```
 
    文面だけ直したときは `--skip-images` で、書き出し済みの写真を使い回せる。エラーが出たら、表示に従って `content.yaml` を直す。最後に、公開の前に決めること(仮の値、送信先、公開する URL、計測)、`facts.md` で要確認とした事実、行き先のないリンクが一覧で出る。
@@ -65,6 +65,7 @@ metadata:
 
 - **色や書体を団体に合わせる:** `brand/<団体>/theme.css` に `:root { --ground: …; --ink: …; }` のように変数を書く。組み立てると `style.css` のあとに読み込まれる。
 - **節を足す・減らす:** `content.yaml` で節(`meetup`、`activities`、`steps`、`promises`、`faq`)を消せば、その節は出ない。新しい種類の節が要るときは、`assets/site-template/index.html.j2` に足し、[references/implementation.md](references/implementation.md) の約束ごとを守る。
+- **テンプレートや CSS を直す場所:** このスキルをプラグインとして入れているときは、入れた先(プラグインのキャッシュ)を直さない。更新すると消える。元のリポジトリ(`NPO-OpenCoralNetwork/community` の `plugins/lp-designer/`)で直し、プラグインの版を上げて配る。団体だけの色や書体は `brand/<団体>/theme.css` に書く。
 - **D3 とは別の方向にする:** このスキルの範囲の外。方向を人に選んでもらってから、テンプレートを別に作る。
 
 ## スクリプト

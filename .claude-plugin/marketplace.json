@@ -1,0 +1,17 @@
+{
+  "name": "opencoral",
+  "description": "特定非営利活動法人 Open Coral Network のプラグイン",
+  "owner": {
+    "name": "特定非営利活動法人 Open Coral Network",
+    "url": "https://github.com/NPO-OpenCoralNetwork"
+  },
+  "plugins": [
+    {
+      "name": "lp-designer",
+      "source": "./plugins/lp-designer",
+      "description": "写真を主役にした参加登録ページを組み立て（lp-build）、点検する（design-review）",
+      "category": "design",
+      "tags": ["landing-page", "review", "japanese"]
+    }
+  ]
+}

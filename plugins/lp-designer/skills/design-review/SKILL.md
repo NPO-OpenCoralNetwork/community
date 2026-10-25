@@ -1,7 +1,7 @@
 ---
 name: design-review
 description: Reviews a built web page like a strict senior designer and QA engineer, especially the photo-led Japanese landing page made by lp-build. Takes screenshots at phone, tablet and desktop widths; measures text contrast over photos, horizontal overflow, Japanese line breaks, tap targets, image loading and sign-up form behavior; then checks visual quality, accessibility, Japanese typography and ad landing page conversion, and verifies each finding before reporting or fixing it. Use when asked to review, check, QA or critique a page or design (レビュー, 点検, 確認, ダサい, 見た目を直して), or after building a page with lp-build.
-compatibility: Node 18+ with Playwright and Chromium (npm install, then npx playwright install chromium). Python 3 for a local web server.
+compatibility: Node 18+ with Playwright and Chromium (npm install -D playwright, then npx playwright install chromium, in the project or globally). Python 3 for a local web server.
 metadata:
   author: npo-opencoralnetwork
   version: "0.1"
@@ -11,7 +11,7 @@ metadata:
 
 組み立てたページを、厳しいデザイナーと品質担当の目で点検します。先にスクリプトで数字をそろえ、スクリーンショットを自分の目で見てから、観点ごとに確かめます。指摘は1件ずつ確かめてから報告し、直します。
 
-このスキルの中のファイルは、この `SKILL.md` があるフォルダからの相対パスで書いています(Claude Code では `${CLAUDE_SKILL_DIR}`、このリポジトリでは `skills/design-review/`)。
+このスキルのフォルダは `${CLAUDE_SKILL_DIR}` です。Claude Code では、読み込むときに実際のパスに置き換わります。置き換わっていないときは、この `SKILL.md` があるフォルダに読み替えます。スキルの中のファイルは、このフォルダからの相対パスで書いています。
 
 ## 手順
 
@@ -24,14 +24,16 @@ metadata:
 2. **スクリプトを実行する。** 書き出し先は `review/<団体>-<日付>/` にする(同じ日に別の団体を点検しても重ならない)。お礼ページ(`thanks.html`)も点検する。
 
    ```sh
-   node skills/design-review/scripts/shoot.js http://localhost:8000/ review/<団体>-<日付>/shots
-   node skills/design-review/scripts/audit.js http://localhost:8000/ review/<団体>-<日付>
-   node skills/design-review/scripts/form_test.js http://localhost:8000/ review/<団体>-<日付>
-   node skills/design-review/scripts/shoot.js http://localhost:8000/thanks.html review/<団体>-<日付>/thanks --viewports desktop,phone
-   node skills/design-review/scripts/audit.js http://localhost:8000/thanks.html review/<団体>-<日付>/thanks
+   node "${CLAUDE_SKILL_DIR}/scripts/shoot.js" http://localhost:8000/ review/<団体>-<日付>/shots
+   node "${CLAUDE_SKILL_DIR}/scripts/audit.js" http://localhost:8000/ review/<団体>-<日付>
+   node "${CLAUDE_SKILL_DIR}/scripts/form_test.js" http://localhost:8000/ review/<団体>-<日付>
+   node "${CLAUDE_SKILL_DIR}/scripts/shoot.js" http://localhost:8000/thanks.html review/<団体>-<日付>/thanks --viewports desktop,phone
+   node "${CLAUDE_SKILL_DIR}/scripts/audit.js" http://localhost:8000/thanks.html review/<団体>-<日付>/thanks
    ```
 
-   まとめて実行するときは `node skills/design-review/scripts/review.js http://localhost:8000/ review/<団体>-<日付>` で、上の5つを順に実行する(途中で NG が出ても最後まで実行する)。
+   まとめて実行するときは `node "${CLAUDE_SKILL_DIR}/scripts/review.js" http://localhost:8000/ review/<団体>-<日付>` で、上の5つを順に実行する(途中で NG が出ても最後まで実行する)。
+
+   「Playwright が見つかりません」と出たら、ページを作っているリポジトリで `npm install -D playwright` と `npx playwright install chromium` を実行する。
 
    使えるポートが決められている環境では、`form_test.js`(または `review.js`)に `--mock-port <番号>` を付けて、仮の送信先のポートを決める。
 

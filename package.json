@@ -3,9 +3,9 @@
   "private": true,
   "description": "design-review のスクリプト(スクリーンショットと点検)に使う Playwright",
   "scripts": {
-    "build": "python3 skills/lp-build/scripts/build_site.py --brand brand/opencoral --out sites/opencoral-lp",
+    "build": "python3 plugins/lp-designer/skills/lp-build/scripts/build_site.py --brand brand/opencoral --out sites/opencoral-lp",
     "serve": "python3 -m http.server 8000 --directory sites/opencoral-lp",
-    "review": "node skills/design-review/scripts/review.js http://localhost:8000/ review"
+    "review": "node plugins/lp-designer/skills/design-review/scripts/review.js http://localhost:8000/ review"
   },
   "devDependencies": {
     "playwright": "^1.63.0"

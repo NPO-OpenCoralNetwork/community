@@ -15,15 +15,17 @@ const VIEWPORTS = [
 ];
 
 function loadPlaywright() {
+  // スクリプトの場所(プラグインのキャッシュのこともある)、実行したフォルダ、PW_PATH、グローバルの順に探す
   const tries = [
     () => require('playwright'),
+    () => require(require.resolve('playwright', { paths: [process.cwd()] })),
     () => require(process.env.PW_PATH),
     () => require(path.join(execSync('npm root -g', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(), 'playwright')),
   ];
   for (const t of tries) {
     try { return t(); } catch (_) { /* 次を試す */ }
   }
-  console.error('Playwright が見つかりません。リポジトリのルートで npm install と npx playwright install chromium を実行してください。');
+  console.error('Playwright が見つかりません。ページを作っているリポジトリのルートで npm install -D playwright と npx playwright install chromium を実行してください。');
   process.exit(2);
 }
 

@@ -2,10 +2,10 @@
 
 Google Ad Grants の検索広告から来た人に、無料の参加登録をしてもらうための1ページのサイトです。デザインは D3「夕方の写真」(写真を主役にしたページ)です。
 
-このフォルダは `brand/opencoral/content.yaml` から組み立てたものです。文面や写真を変えるときは、HTML を直接直さず、`content.yaml` を直して組み立て直します。
+このフォルダは `brand/opencoral/content.yaml` から組み立てたものです。文面や写真を変えるときは、HTML を直接直さず、`content.yaml` を直して組み立て直します。AI エージェントには「ページを組み立て直して」と頼みます(lp-build スキル)。手で組み立てるときは、次を実行します。
 
 ```sh
-python3 skills/lp-build/scripts/build_site.py --brand brand/opencoral --out sites/opencoral-lp
+python3 plugins/lp-designer/skills/lp-build/scripts/build_site.py --brand brand/opencoral --out sites/opencoral-lp
 ```
 
 ## 中身
