@@ -14,6 +14,7 @@
 {{ indent }}  <img class="photo" src="assets/img/{{ slot }}-{{ photos[slot].mid }}.jpg" srcset="{{ srcset(slot, 'jpg') }}" sizes="{{ sizes }}" width="{{ photos[slot].w }}" height="{{ photos[slot].h }}" alt="{{ alt | e }}" loading="lazy" decoding="async"{{ focal_style(slot) }}>
 {{ indent }}</picture>
 {%- endmacro -%}
+{%- from "_measure.html.j2" import measure_tags -%}
 <!doctype html>
 <html lang="{{ c.site.lang }}">
 <head>
@@ -22,11 +23,13 @@
 <title>{{ c.site.title | e }}</title>
 <meta name="description" content="{{ c.site.description | e }}">
 <meta name="theme-color" content="{{ c.site.theme_color }}">
-<!-- 公開時は og:image を https:// から始まる絶対URLに書き換え、og:url(このページの絶対URL)を足してください -->
 <meta property="og:type" content="website">
+{%- if c.site.url %}
+<meta property="og:url" content="{{ c.site.url }}">
+{%- endif %}
 <meta property="og:title" content="{{ c.site.og_title | e }}">
 <meta property="og:description" content="{{ c.site.og_description | e }}">
-<meta property="og:image" content="assets/img/og.jpg">
+<meta property="og:image" content="{{ c.site.url or '' }}assets/img/og.jpg">
 <meta property="og:locale" content="ja_JP">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,7 +40,7 @@
 <link rel="stylesheet" href="assets/css/theme.css">
 {%- endif %}
 <script src="assets/js/main.js" defer></script>
-<!-- Google タグ(gtag.js)は README の「計測」の手順でここに貼ります -->
+{{- measure_tags(c.measure) }}
 </head>
 <body>
 <a class="skip" href="#main">本文へ移動</a>
@@ -45,7 +48,7 @@
 <header class="topbar">
   <a class="mark" href="./">{% if c.org.mark_kind %}<span class="mark-kind">{{ c.org.mark_kind }}</span>{% endif %}{{ c.org.mark }}</a>
   <nav class="nav" aria-label="ページ内のメニュー">
-{%- for n in c.nav %}
+{%- for n in c.nav or [] %}
     <a{% if n.phone is sameas false %} class="nav-x"{% endif %} href="{{ n.href }}">{{ n.label }}</a>
 {%- endfor %}
   </nav>
@@ -125,7 +128,7 @@
   <section class="sec" id="acts" aria-labelledby="acts-title">
     <div class="wrap">
       <h2 class="h2 acts-head" id="acts-title">{{ c.activities.heading }}</h2>
-{%- for a in c.activities['items'] %}
+{%- for a in c.activities['items'] or [] %}
 {%- set layout = act_layouts[loop.index0] %}
 
       <div class="act{% if layout == 'flip' %} flip{% elif layout == 'wide' %} wide{% endif %}">
@@ -149,7 +152,7 @@
     <div class="wrap split">
       <h2 class="h2" id="steps-title">{{ c.steps.heading }}</h2>
       <ol class="steps body">
-{%- for s in c.steps['items'] %}
+{%- for s in c.steps['items'] or [] %}
         <li><h3>{{ s.title }}</h3><p class="small">{{ s.text }}</p></li>
 {%- endfor %}
       </ol>
@@ -164,7 +167,7 @@
       <h2 class="h2" id="promise-title">{{ c.promises.heading }}</h2>
       <div class="body">
         <ul>
-{%- for p in c.promises['items'] %}
+{%- for p in c.promises['items'] or [] %}
           <li>{{ p }}</li>
 {%- endfor %}
         </ul>
@@ -185,7 +188,7 @@
     <div class="wrap split faq">
       <h2 class="h2" id="faq-title">{{ c.faq.heading }}</h2>
       <div class="qa body">
-{%- for f in c.faq['items'] %}
+{%- for f in c.faq['items'] or [] %}
         <details{% if f.open %} open{% endif %}><summary>{{ f.q }}</summary><p>{{ f.a }}</p></details>
 {%- endfor %}
       </div>
@@ -265,7 +268,7 @@
         <p>{{ c.org.footer_lines | join('<br>') }}</p>
       </div>
       <nav aria-label="団体の情報">
-{%- for l in c.org.links %}
+{%- for l in c.org.links or [] %}
         <a href="{{ l.href }}">{{ l.label }}</a>
 {%- endfor %}
       </nav>
@@ -276,7 +279,7 @@
       <summary>写真について</summary>
       <ul>
 {%- for cr in c.credits['items'] %}
-        <li>{{ cr.use }}：{{ cr.author }}{% for wk in cr.works %}「<a href="{{ wk.url }}">{{ wk.title }}</a>」{% endfor %}<a href="{{ cr.license_url }}">{{ cr.license }}</a></li>
+        <li>{{ cr.use }}：{{ cr.author }}{% for wk in cr.works or [] %}「<a href="{{ wk.url }}">{{ wk.title }}</a>」{% endfor %}<a href="{{ cr.license_url }}">{{ cr.license }}</a></li>
 {%- endfor %}
 {%- if c.credits.note %}
         <li>{{ c.credits.note }}</li>

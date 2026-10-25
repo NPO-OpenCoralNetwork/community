@@ -24,7 +24,7 @@
 | --- | --- | --- |
 | AI の勉強会は、プロンプト設計や自律エージェントを実際に動かすハンズオン | 「AIへの指示の書き方や、AIエージェントの使い方を、その場で動かしながら学びます」 | `open-coral-handbook/participation/bases-third-places.mdx` |
 | 自分たちで開発した AI アプリやエージェントを動かしながら学ぶ | 「自分たちでつくった道具も使います」 | `open-coral-handbook/ecosystem-jobs/marketing-strategy.mdx` |
-| 自作のアプリと AI エージェントは15以上 | 「これまでに15以上つくりました」。**要確認**:資料で確かめられたのは8つ。公開前に運営が数を確かめる | `docs/reports/concept-report.md` |
+| 自作のアプリと AI エージェントは15以上 | 数は書かない。資料で確かめられたのは8つ。運営が数を確かめたら書く | `docs/reports/concept-report.md` |
 | 課題を解く流れは、発見 → 対話 → 人の判断 → 小さな実装 → 検証 | 「AIで整理し、何をするかは人が話し合って決めます。小さくつくって試し、うまくいったかを確かめます」 | `docs/reports/concept-report.md` |
 | 居場所には、対話や仕事のためだけにふらっと来てもよい | 「作業をしに来るだけ、話をしに来るだけでも歓迎です」 | `open-coral-handbook/participation/onboarding.mdx` |
 

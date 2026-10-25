@@ -25,7 +25,7 @@
 - **組み立てた HTML は手で直さない。** `content.yaml`、`brand/<団体>/theme.css`、テンプレートを直して組み立て直す。
 - **見た目は必ずスクリーンショットで確かめる。** スマホ幅とパソコン幅の両方。
 - **頼まれていないのに、公開、push、広告の設定をしない。**
-- 文章は日本語で、短い文で書く。和文の中のかっことコロンは全角。
+- 文章は日本語で、短い文で書く。ページに載せる文章(`content.yaml`)では、和文の中のかっことコロンを全角にする。
 
 ## よく使うコマンド
 
@@ -39,7 +39,5 @@ python3 skills/lp-build/scripts/build_site.py --brand brand/opencoral --out site
 
 # 点検する(別の端末でサーバーを立ててから)
 python3 -m http.server 8000 --directory sites/opencoral-lp
-node skills/design-review/scripts/shoot.js http://localhost:8000/ review/shots
-node skills/design-review/scripts/audit.js http://localhost:8000/ review
-node skills/design-review/scripts/form_test.js http://localhost:8000/ review
+node skills/design-review/scripts/review.js http://localhost:8000/ review
 ```

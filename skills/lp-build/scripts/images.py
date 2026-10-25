@@ -13,6 +13,7 @@
 from __future__ import annotations
 
 import argparse
+import io
 import sys
 from pathlib import Path
 
@@ -30,7 +31,35 @@ def avif_supported() -> bool:
 
 
 def load(path: Path) -> Image.Image:
-    return ImageOps.exif_transpose(Image.open(path)).convert("RGB")
+    """写真を開き、撮ったときの向きに直して、sRGB の RGB にそろえる。
+
+    iPhone などの写真は Display P3 などの色で保存されていることがある。書き出す JPEG・WebP・AVIF には
+    色のプロファイルを付けず、ブラウザは sRGB として表示するので、先に sRGB に変換しておく。
+    """
+    with Image.open(path) as src:
+        icc = src.info.get("icc_profile")
+        im = ImageOps.exif_transpose(src)
+    if icc:
+        im = to_srgb(im, icc)
+    im = im.convert("RGB")
+    im.info.pop("icc_profile", None)  # AVIF だけにプロファイルが付かないよう、どの形式にも付けない
+    return im
+
+
+def to_srgb(im: Image.Image, icc: bytes) -> Image.Image:
+    try:
+        from PIL import ImageCms
+    except ImportError:  # littlecms のない Pillow
+        print("注意: この Pillow は色のプロファイルを変換できません。色がずれることがあります", file=sys.stderr)
+        return im
+    if im.mode not in ("RGB", "CMYK", "L"):
+        im = im.convert("RGB")
+    try:
+        return ImageCms.profileToProfile(im, ImageCms.ImageCmsProfile(io.BytesIO(icc)),
+                                         ImageCms.createProfile("sRGB"), outputMode="RGB")
+    except (ImageCms.PyCMSError, OSError, ValueError) as e:
+        print(f"注意: 色のプロファイルを読めないので、sRGB として扱います({e})", file=sys.stderr)
+        return im
 
 
 def grade(im: Image.Image) -> Image.Image:

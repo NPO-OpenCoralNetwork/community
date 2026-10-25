@@ -14,6 +14,7 @@ site:
   og_title: "TODO: 最初の画面の見出し"
   og_description: "TODO: 目的を1文で"
   theme_color: "#ecebe8"
+  url: ""          # 公開する URL(https:// で始め / で終える)。決まったら書く
 
 org:
   mark: TODO 団体名(ロゴの文字)
@@ -122,6 +123,11 @@ join:
   note: TODO データの扱いの要約（<a href="#">プライバシーポリシー</a>）。
   done_heading: 参加登録を受け付けました。
   done_text: TODO 次に何が届くか
+
+# Google 広告の計測。送信先(join.endpoint)を決めたあとに書く
+measure:
+  google_tag_id: ""
+  conversion_send_to: ""
 
 thanks:
   title: 参加登録を受け付けました | TODO 団体名

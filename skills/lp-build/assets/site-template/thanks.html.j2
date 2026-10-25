@@ -1,3 +1,4 @@
+{%- from "_measure.html.j2" import measure_tags -%}
 <!doctype html>
 <html lang="{{ c.site.lang }}">
 <head>
@@ -13,7 +14,7 @@
 {%- if theme_css %}
 <link rel="stylesheet" href="assets/css/theme.css">
 {%- endif %}
-<!-- Google タグ(gtag.js)を README の「計測」の手順でここに貼り、その下に Google 広告のコンバージョンタグ(イベント スニペット)を貼ります -->
+{{- measure_tags(c.measure, conversion=true) }}
 </head>
 <body class="page-plain">
 
@@ -41,7 +42,7 @@
       <p>{{ c.org.footer_lines | join('<br>') }}</p>
     </div>
     <nav aria-label="団体の情報">
-{%- for l in c.org.links %}
+{%- for l in c.org.links or [] %}
       <a href="{{ l.href }}">{{ l.label }}</a>
 {%- endfor %}
     </nav>

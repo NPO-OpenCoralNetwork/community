@@ -34,9 +34,24 @@ python3 skills/lp-build/scripts/build_site.py --brand brand/{{ brand_name }} --o
 {%- for l in hash_links %}
 | リンク「{{ l }}」 | `href="#"` | 実際のページの URL |
 {%- endfor %}
-| `index.html` の `<head>` | `og:image` が相対パス | `https://` から始まる絶対 URL。`og:url` も足す |
+{%- if not c.join.endpoint %}
+| `content.yaml` の `join.endpoint` | 空(登録がどこにも届かない) | フォームの送信先の URL(下の「参加登録フォーム」) |
+{%- endif %}
+{%- if not c.site.url %}
+| `content.yaml` の `site.url` | 空(`og:image` が相対パスで、`og:url` もない) | 公開する URL。`https://` で始め、`/` で終える |
+{%- endif %}
+{%- if not (c.measure and c.measure.google_tag_id) %}
+| `content.yaml` の `measure` | 空(計測していない) | Google タグの ID とコンバージョンの `send_to`(下の「計測」) |
+{%- endif %}
 {%- if credits %}
 | 写真 | 仮置きの写真(下の「写真」を参照) | 実際に撮った写真 |
+{%- endif %}
+{%- if unconfirmed %}
+
+`brand/{{ brand_name }}/facts.md` で「要確認」とした次の事実も、公開の前に運営が確かめます。
+{% for f in unconfirmed %}
+- {{ f }}
+{%- endfor %}
 {%- endif %}
 
 ## 参加登録フォーム
@@ -45,7 +60,7 @@ python3 skills/lp-build/scripts/build_site.py --brand brand/{{ brand_name }} --o
 
 - `endpoint` には、フォームの内容を受け取るサービスの URL を入れます。送信は `FormData` を `POST` で送り、2xx が返れば成功として扱います(例:Formspree)。JavaScript が動かないブラウザでも `action` に送られます。
 - `endpoint` が空のあいだは、どこにも送信しません。入力チェックとお礼ページへの移動だけを確かめられます。
-- `redirect` は、送信できたあとに移るページです。空にすると、ページ内に「{{ c.join.done_heading }}」を表示します。ただしお礼ページが表示されないので、下の「計測」の手順3では数えられません。空にする場合は、`dataLayer` の `sign_up` をきっかけにコンバージョンを数える設定にしてください。
+- `redirect` は、送信できたあとに移るページです。空にすると、ページ内に「{{ c.join.done_heading }}」を表示します。ただしお礼ページが表示されないので、下の「計測」の手順ではコンバージョンを数えられません。
 
 送る項目は `nickname`(お名前)、`email`{% if c.join.interests %}、`interest`(関心のあること、複数可){% endif %}{% if c.join.photo_consent %}、`photo_consent`(記録写真への同意、任意){% endif %}です。ボット対策の見えない欄 `website` は、送信前に取り除きます。
 
@@ -53,11 +68,18 @@ python3 skills/lp-build/scripts/build_site.py --brand brand/{{ brand_name }} --o
 
 Ad Grants では、毎月1件以上のコンバージョンを計測する必要があります。
 
-1. Google 広告で「ウェブサイトのコンバージョン」を作り、Google タグとイベント スニペットを発行します。
-2. Google タグを `index.html` と `thanks.html` の `<head>` に貼ります(目印のコメントがあります)。
-3. イベント スニペットを `thanks.html` の `<head>` に貼ります。お礼ページが表示された回数が、参加登録の数になります。
+1. Google 広告で「ウェブサイトのコンバージョン」を作り、Google タグの ID(`AW-` で始まる)と、イベント スニペットの `send_to`(`AW-…/…`)を控えます。
+2. `content.yaml` の `measure` に書いて、組み立て直します。Google タグは `index.html` と `thanks.html` の両方に、コンバージョンのイベントは `thanks.html` にだけ入ります。お礼ページが表示された回数が、参加登録の数になります。
 
-`main.js` は送信に成功したとき(`endpoint` が空の確認用の動きのときも)、`dataLayer` に `sign_up` を送ります。Google タグ マネージャーを使う場合はこれをきっかけにできます。テストの登録が数えられないよう、タグを貼るのは `endpoint` を設定したあとにします。
+   ```yaml
+   measure:
+     google_tag_id: AW-123456789
+     conversion_send_to: AW-123456789/AbCdEfGhIj
+   ```
+
+組み立てた HTML にタグを手で貼らないでください。次に組み立てると消えます。テストの登録が数えられないよう、`measure` を書くのは `endpoint` を設定したあとにします。
+
+`main.js` は送信に成功したとき(`endpoint` が空の確認用の動きのときも)、`sign_up` のイベントを Google タグと `dataLayer` に送ります。`redirect` を空にしてお礼ページを使わないときは、これをきっかけにコンバージョンを数える設定にします。
 
 ## 写真
 
@@ -75,7 +97,7 @@ Ad Grants では、毎月1件以上のコンバージョンを計測する必要
 {%- for row in photo_rows %}
 | `{{ row.slot }}` | {{ row.where }} | {{ row.widths }} |
 {%- endfor %}
-| `og.jpg` | SNS で共有したときの画像(`og:image`) | 1200×630。JPEG だけ |
+| `og.jpg` | SNS で共有したときの画像(`og:image`。`site.url` を書くと絶対 URL になる) | 1200×630。JPEG だけ |
 
 横長の写真は 3:2 で撮ります。スマホでは左右を少し切って 4:3 で表示します。{% if 'wide' in act_layouts %}活動の最後の写真は、画面の幅が 761px 以上のとき上下を切って 21:9 で表示するので、人や机を高さの真ん中あたりに収めます。{% endif %}最初の画面のスマホ用は縦長(9:16 前後)で、上に照明、真ん中に人、下3分の1は床か机にします。
 

@@ -17,6 +17,7 @@ site:
   og_title: "AIで、まちの課題を仲間と見つけて解く。"
   og_description: "市民がAIを道具に、まちの身近な課題を見つけ、仲間と解いていくコミュニティです。参加登録は無料です。"
   theme_color: "#ecebe8"
+  url: ""                     # 公開する URL(https:// で始め / で終える)。決まったら書く。og:url と og:image に使う
 
 org:
   mark: Open Coral Network          # ページ上部とフッターのロゴの文字
@@ -73,7 +74,7 @@ activities:
   # 写真と文を左右交互に並べる。項目が3つ以上の奇数なら、最後の項目は横長(21:9)で大きく見せる
   items:
     - heading: AIの勉強会
-      body: AIへの指示の書き方や、AIエージェントの使い方を、その場で動かしながら学びます。自分たちでつくった道具も使います。アプリとAIエージェントは、これまでに15以上つくりました。
+      body: AIへの指示の書き方や、AIエージェントの使い方を、その場で動かしながら学びます。自分たちでつくった道具も使います。
       photo: work
       alt: 暖かい照明の長机で、参加者がノートパソコンに向かっている
       caption: 勉強会の長机、午後。
@@ -139,6 +140,11 @@ join:
   note: 相談の内容や参加者のデータは、AIの学習に使いません（<a href="#">プライバシーポリシー</a>）。
   done_heading: 参加登録を受け付けました。
   done_text: 次の集まりの日程と、参加者のチャットへの招待を、メールでお送りします。
+
+# Google 広告の計測。送信先(join.endpoint)を決めたあとに書く。書き方: skills/lp-build/references/ad-grants.md
+measure:
+  google_tag_id: ""           # Google タグの ID(例: AW-123456789)
+  conversion_send_to: ""      # コンバージョンの send_to(例: AW-123456789/AbCdEfGhIj)
 
 thanks:
   title: 参加登録を受け付けました | NPO法人 Open Coral Network

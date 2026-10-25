@@ -9,7 +9,8 @@
 //
 // 点検すること
 //   ページ全体: 見出しの順番、画像(最初の画面の読み込み優先度、遅延読み込み、幅と高さ、ファイルの有無)、
-//              仮の値と残った記号、行き先のないリンク、フォームのラベルと欄の名前、和文の中の半角かっこ、
+//              仮の値と残った記号(閉じた「よくある質問」と送信後の表示も読む)、行き先のないリンク、
+//              フォームのラベルと欄の名前、送信先、SNS 用の画像の URL、和文の中の半角かっこ、
 //              大見出しの書体で palt が効くか
 //   画面の大きさごと: 横のはみ出し、最初の画面のボタンが見えるか、ページの長さ、押せるところの大きさ、
 //              改行(1〜2文字だけの行、行頭の句読点)、写真の上の文字のコントラスト、無地の上の文字のコントラスト
@@ -63,7 +64,14 @@ async function pageChecks(page) {
     }
 
     // 仮の値、残った記号、行き先のないリンク
+    // 閉じている「よくある質問」の答えと、送信したあとに出る表示(hidden)も読むため、一時的に開く
+    const closed = [...document.querySelectorAll('details:not([open])')];
+    const hidden = [...document.querySelectorAll('body [hidden]')];
+    closed.forEach((d) => d.setAttribute('open', ''));
+    hidden.forEach((el) => el.removeAttribute('hidden'));
     const text = document.body.innerText;
+    closed.forEach((d) => d.removeAttribute('open'));
+    hidden.forEach((el) => el.setAttribute('hidden', ''));
     const ph = [...new Set([...(text.match(/\[[^\[\]\n]{1,60}\]/g) || []), ...(text.match(/[^\s、。]{0,12}(（仮）|\(仮\)|未定|TBD)/g) || [])])];
     if (ph.length) add(WARN, '仮の値', `公開前に決めること: ${ph.join('、')}`);
     if (/\{\{|\}\}/.test(document.documentElement.innerHTML)) add(NG, '仮の値', 'テンプレートの記号 {{ }} が残っています');
@@ -89,7 +97,14 @@ async function pageChecks(page) {
       }
       const mail = form.querySelector('input[type="email"]');
       if (mail && !mail.getAttribute('autocomplete')) add(WARN, 'フォーム', 'メール欄に autocomplete="email" がありません');
+      if (form.hasAttribute('data-signup') && !(form.dataset.endpoint || '').trim()) {
+        add(WARN, 'フォーム', '参加登録の送信先(data-endpoint)が空です。このまま公開すると、登録がどこにも届きません');
+      }
     }
+
+    // SNS で共有したときの画像は、https:// から始まる絶対 URL でないと出ない
+    const og = document.querySelector('meta[property="og:image"]');
+    if (og && !/^https:\/\//.test(og.content)) add(WARN, 'SNS', `og:image が絶対 URL ではありません(${og.getAttribute('content')})。lp-build では content.yaml の site.url を書いて組み立て直す`);
 
     // 和文の中の半角のかっことコロン
     const jp = '\\u3040-\\u30ff\\u4e00-\\u9fff';

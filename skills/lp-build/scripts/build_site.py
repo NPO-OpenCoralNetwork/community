@@ -4,10 +4,11 @@
 使い方(リポジトリのルートで):
   python3 skills/lp-build/scripts/build_site.py --brand brand/opencoral --out sites/opencoral-lp
 
-  --skip-images   写真の書き出しを省く(文面だけ直したとき。書き出し済みの写真が要る)
+  --skip-images   書き出し済みの写真を使い回す(文面だけ直したとき。足りない写真だけ書き出す)
   --no-avif       AVIF を書き出さない(Pillow が AVIF に対応していないとき)
 
-組み立てたあと、残っている仮の値([日時] など)と、行き先のないリンク(href="#")を一覧にして表示する。
+組み立てたあと、公開の前に決めること(仮の値、送信先、公開する URL、計測、facts.md の要確認の事実)と、
+行き先のないリンク(href="#")を一覧にして表示する。
 必要なもの: Python 3.9 以上、Pillow、PyYAML、Jinja2(色調をかけるときは numpy)。
 """
 from __future__ import annotations
@@ -41,6 +42,37 @@ PLACEHOLDER = re.compile(r"\[[^\[\]<>\n]{1,60}\]|[^\s、。\[\]<>]{0,12}(?:（�
 # 日付と曜日: 「2026年11月14日（土）」「11月14日(土)」
 DATE_WITH_WEEKDAY = re.compile(r"(?:(\d{4})年)?(\d{1,2})月(\d{1,2})日\s*[（(]([月火水木金土日])[)）]")
 WEEKDAYS = "月火水木金土日"
+# 年のない日付が、この日数のうちに過ぎたばかりなら「過ぎた日付」として知らせる
+RECENT_PAST_DAYS = 60
+
+# content.yaml の形。dict は名前の決まった項目、[x] は x のリスト、"*" はどんな名前でもよい項目
+TEXT, FLAG, NUM, INT = "文字列", "true か false", "数", "整数"
+SHAPE = {
+    "site": {"lang": TEXT, "title": TEXT, "description": TEXT, "og_title": TEXT, "og_description": TEXT,
+             "theme_color": TEXT, "url": TEXT},
+    "org": {"mark": TEXT, "mark_kind": TEXT, "footer_lines": [TEXT], "links": [{"label": TEXT, "href": TEXT}]},
+    "cta": TEXT,
+    "nav": [{"label": TEXT, "href": TEXT, "phone": FLAG}],
+    "hero": {"headline": [TEXT], "sub": TEXT, "caption": TEXT, "photo": TEXT, "photo_phone": TEXT, "alt": TEXT},
+    "mission": {"heading": TEXT, "statement": TEXT, "operator": TEXT},
+    "meetup": {"heading": TEXT, "intro": TEXT, "details": [{"label": TEXT, "value": TEXT}], "notes": [TEXT],
+               "photo": TEXT, "alt": TEXT, "caption": TEXT},
+    "activities": {"heading": TEXT,
+                   "items": [{"heading": TEXT, "body": TEXT, "photo": TEXT, "alt": TEXT, "caption": TEXT}]},
+    "steps": {"heading": TEXT, "items": [{"title": TEXT, "text": TEXT}]},
+    "promises": {"heading": TEXT, "items": [TEXT], "voice": {"text": TEXT, "signature": TEXT}},
+    "faq": {"heading": TEXT, "items": [{"q": TEXT, "a": TEXT, "open": FLAG}]},
+    "join": {"heading": TEXT, "lead": TEXT, "sub": TEXT, "endpoint": TEXT, "redirect": TEXT,
+             "name_label": TEXT, "name_hint": TEXT, "email_label": TEXT, "interest_legend": TEXT,
+             "interest_hint": TEXT, "interests": [TEXT], "photo_consent": TEXT, "note": TEXT,
+             "done_heading": TEXT, "done_text": TEXT},
+    "thanks": {"title": TEXT, "heading": TEXT, "text": TEXT, "small": TEXT, "back": TEXT},
+    "measure": {"google_tag_id": TEXT, "conversion_send_to": TEXT},
+    "photos": {"*": {"file": TEXT, "widths": [INT], "quality": INT, "focal": TEXT}},
+    "og_image": {"photo": TEXT, "y": NUM},
+    "credits": {"note": TEXT, "items": [{"use": TEXT, "author": TEXT, "works": [{"title": TEXT, "url": TEXT}],
+                                         "license": TEXT, "license_url": TEXT}]},
+}
 
 
 class BuildError(Exception):
@@ -73,6 +105,39 @@ def walk_strings(node, path=()):
         yield path, node
 
 
+def check_shape(node, shape, path=()) -> list[str]:
+    """値が、テンプレートの読める形(文字列、リスト、項目の表)になっているかを確かめる。
+
+    YAML は引用符のない 18:30 を 1110 という数に、yes や no を true か false に、2026-11-14 を日付に読む。
+    文字列のはずの場所がそうなっていたら、引用符で囲むよう知らせる。
+    """
+    where = ".".join(map(str, path))
+    if node is None:
+        return []  # 書いていない項目。必ず書く項目かどうかは validate で確かめる
+    if isinstance(shape, dict):
+        if not isinstance(node, dict):
+            return [f"{where} は「名前: 値」の形で書きます"]
+        errors = []
+        for k, v in node.items():
+            sub = shape.get(k, shape.get("*"))
+            if sub is not None:
+                errors += check_shape(v, sub, path + (k,))
+        return errors
+    if isinstance(shape, list):
+        if not isinstance(node, list):
+            return [f"{where} はリストで書きます(1つずつ「- 」で始める)"]
+        return [e for i, v in enumerate(node) for e in check_shape(v, shape[0], path + (i,))]
+    is_num = isinstance(node, (int, float)) and not isinstance(node, bool)
+    ok = {TEXT: isinstance(node, str), FLAG: isinstance(node, bool), NUM: is_num,
+          INT: is_num and isinstance(node, int)}[shape]
+    if ok:
+        return []
+    if shape == TEXT:
+        return [f"{where} を、YAML が文字列ではなく {node} と読みました。値を \"…\" で囲んでください"
+                "(引用符がないと、18:30 は 1110 という数に、yes や no は true か false に、2026-11-14 は日付になります)"]
+    return [f"{where} は{shape}で書きます(いまは {node!r})"]
+
+
 def describe(path: tuple, c: dict) -> str:
     """content.yaml の場所を、人が読める説明にする。"""
     try:
@@ -88,11 +153,17 @@ def describe(path: tuple, c: dict) -> str:
     return ".".join(str(p) for p in path)
 
 
-def validate(c: dict, brand: Path) -> list[str]:
+def validate(c, brand: Path) -> list[str]:
     """組み立てられない誤りは BuildError、直したほうがよい点は警告として返す。"""
-    errors, warnings = [], []
-    for key in ("site", "org", "cta", "nav", "hero", "join", "thanks", "photos"):
-        if key not in c:
+    if not isinstance(c, dict):
+        raise BuildError("content.yaml が空か、「名前: 値」の形になっていません")
+    errors = check_shape(c, SHAPE)
+    if errors:
+        raise BuildError("\n".join(errors))
+
+    warnings = []
+    for key in ("site", "org", "cta", "hero", "join", "thanks", "photos"):
+        if c.get(key) is None:
             errors.append(f"content.yaml に {key} がありません")
     if errors:
         raise BuildError("\n".join(errors))
@@ -106,16 +177,31 @@ def validate(c: dict, brand: Path) -> list[str]:
     }
     for section, keys in required.items():
         for k in keys:
-            if not (c.get(section) or {}).get(k):
+            if not c[section].get(k):
                 errors.append(f"{section}.{k} がありません(必ず書く項目です。書き方は content-guide.md)")
     if not c.get("cta"):
         errors.append("cta(ボタンの文言)がありません")
     if errors:
         raise BuildError("\n".join(errors))
 
+    url = c["site"].get("url")
+    if url and not re.fullmatch(r"https://[^\s\"'<>]+/", url):
+        errors.append(f"site.url は https:// で始め、/ で終えます(例: https://example.org/join/)。いまは {url}")
+    m = c.get("measure") or {}
+    if m.get("google_tag_id") and not re.fullmatch(r"(AW|G|GT)-[A-Za-z0-9]+", m["google_tag_id"]):
+        errors.append(f"measure.google_tag_id は AW-123456789 のような Google タグの ID にします。いまは {m['google_tag_id']}")
+    if m.get("conversion_send_to"):
+        if not re.fullmatch(r"AW-\d+/[A-Za-z0-9_-]+", m["conversion_send_to"]):
+            errors.append(f"measure.conversion_send_to は AW-123456789/AbCdEf のような形にします。いまは {m['conversion_send_to']}")
+        if not m.get("google_tag_id"):
+            errors.append("measure.conversion_send_to を使うときは、measure.google_tag_id も書きます")
+    if m.get("google_tag_id") and not c["join"].get("endpoint"):
+        warnings.append("計測のタグがあるのに、送信先(join.endpoint)が空です。テストの登録がコンバージョンとして数えられます")
+
     photos = c["photos"]
     for slot, spec in photos.items():
-        f = brand / "photos" / spec.get("file", "")
+        spec = spec or {}
+        f = brand / "photos" / (spec.get("file") or "")
         if not spec.get("file") or not f.exists():
             errors.append(f"写真 {slot} のファイルが見つかりません: {f}")
         if not spec.get("widths"):
@@ -124,11 +210,13 @@ def validate(c: dict, brand: Path) -> list[str]:
     uses = [("hero.photo", c["hero"].get("photo"), c["hero"].get("alt"), c["hero"].get("caption")),
             ("hero.photo_phone", c["hero"].get("photo_phone"), c["hero"].get("alt"), c["hero"].get("caption"))]
     if c.get("meetup"):
-        m = c["meetup"]
-        uses.append(("meetup", m.get("photo"), m.get("alt"), m.get("caption")))
+        mt = c["meetup"]
+        uses.append(("meetup", mt.get("photo"), mt.get("alt"), mt.get("caption")))
     if c.get("activities"):
-        for i, a in enumerate(c["activities"].get("items", [])):
+        for i, a in enumerate(c["activities"].get("items") or []):
             uses.append((f"activities.items[{i}]", a.get("photo"), a.get("alt"), a.get("caption")))
+    if c.get("og_image"):
+        uses.append(("og_image", c["og_image"].get("photo"), "-", "-"))
     for where, slot, alt, cap in uses:
         if slot not in photos:
             errors.append(f"{where} の写真 {slot!r} が photos にありません")
@@ -137,10 +225,14 @@ def validate(c: dict, brand: Path) -> list[str]:
         if not cap:
             errors.append(f"{where} に caption(場所と時間帯)がありません")
 
-    for i, line in enumerate(c["hero"].get("headline", [])):
+    for section in ("activities", "steps", "promises", "faq"):
+        if c.get(section) and not c[section].get("items"):
+            warnings.append(f"{section} に items がありません。節ごと消すか、項目を書きます")
+
+    for i, line in enumerate(c["hero"]["headline"]):
         if text_width(line) > HEADLINE_LINE_MAX:
             warnings.append(f"見出しの{i + 1}行目が全角{text_width(line):.1f}字です。スマホで3行になります(上限 {HEADLINE_LINE_MAX:.0f} 字)")
-    if not 1 <= len(c["hero"].get("headline", [])) <= 2:
+    if not 1 <= len(c["hero"]["headline"]) <= 2:
         warnings.append("見出しは1〜2行にします")
 
     targets = {"#join"}
@@ -148,8 +240,10 @@ def validate(c: dict, brand: Path) -> list[str]:
         targets.add("#meetup")
     if c.get("activities"):
         targets.add("#acts")
-    for n in c["nav"]:
-        if n["href"].startswith("#") and n["href"] not in targets:
+    for n in c.get("nav") or []:
+        if not n.get("label") or not n.get("href"):
+            errors.append("メニュー(nav)の項目には label と href を書きます")
+        elif n["href"].startswith("#") and n["href"] not in targets:
             errors.append(f"メニュー「{n['label']}」の行き先 {n['href']} がページにありません")
 
     warnings.extend(check_weekdays(c))
@@ -165,27 +259,57 @@ def validate(c: dict, brand: Path) -> list[str]:
     return warnings
 
 
+def _date_or_none(y: int, m: int, d: int) -> date | None:
+    try:
+        return date(y, m, d)
+    except ValueError:
+        return None
+
+
 def check_weekdays(c: dict, today: date | None = None) -> list[str]:
-    """日付と曜日が合っているかを確かめる。年がなければ、今日から1年以内のその日付で確かめる。"""
+    """日付と曜日が合っているかを確かめる。
+
+    年のない日付は、今日以降でいちばん近いその日付として確かめる(2月29日なら次のうるう年)。
+    ただし、2か月以内に過ぎたその日付と曜日が合うなら、曜日の誤りではなく「過ぎた日付」として知らせる。
+    """
     today = today or date.today()
     out = []
     for path, s in walk_strings(c):
         plain = re.sub(r"<[^>]+>", "", s)
         for m in DATE_WITH_WEEKDAY.finditer(plain):
             year, month, day, wd = m.group(1), int(m.group(2)), int(m.group(3)), m.group(4)
-            try:
-                if year:
-                    d = date(int(year), month, day)
-                else:
-                    d = date(today.year, month, day)
-                    if d < today:
-                        d = date(today.year + 1, month, day)
-            except ValueError:
+            if year:
+                d = _date_or_none(int(year), month, day)
+            else:
+                found = [x for y in range(today.year - 1, today.year + 9) if (x := _date_or_none(y, month, day))]
+                d = next((x for x in found if x >= today), None)
+                prev = max((x for x in found if x < today), default=None)
+                if (d and WEEKDAYS[d.weekday()] != wd and prev and WEEKDAYS[prev.weekday()] == wd
+                        and (today - prev).days <= RECENT_PAST_DAYS):
+                    d = prev
+            if d is None:
                 out.append(f"{describe(path, c)}: 「{m.group(0)}」は存在しない日付です")
                 continue
             actual = WEEKDAYS[d.weekday()]
             if actual != wd:
                 out.append(f"{describe(path, c)}: 「{m.group(0)}」の曜日が違います。{d.year}年{month}月{day}日は{actual}曜日です。依頼した人に確かめてください")
+            elif d < today:
+                out.append(f"{describe(path, c)}: 「{m.group(0)}」は過ぎた日付です({d.year}年{month}月{day}日)。次の日付を依頼した人に確かめてください")
+    return out
+
+
+def unconfirmed_facts(brand: Path) -> list[str]:
+    """facts.md の表で「**要確認**」と書いた事実を、公開の前に運営が確かめることとして拾う。"""
+    f = brand / "facts.md"
+    if not f.exists():
+        return []
+    out = []
+    for line in f.read_text(encoding="utf-8").splitlines():
+        if not line.startswith("|") or "**要確認**" not in line:
+            continue
+        fact = line.strip().strip("|").split("|")[0].strip()
+        note = line.split("**要確認**", 1)[1].split("|")[0].lstrip(":：").strip()
+        out.append(f"{fact}：{note}" if note else fact)
     return out
 
 
@@ -200,33 +324,41 @@ def build(brand: Path, out: Path, skip_images: bool, use_avif: bool) -> dict:
     content_path = brand / "content.yaml"
     if not content_path.exists():
         raise BuildError(f"{content_path} がありません")
-    c = yaml.safe_load(content_path.read_text(encoding="utf-8"))
+    try:
+        c = yaml.safe_load(content_path.read_text(encoding="utf-8"))
+    except yaml.YAMLError as e:
+        raise BuildError(f"content.yaml を読めません。字下げや引用符を確かめてください:\n{e}") from e
     warnings = validate(c, brand)
+    c["site"]["lang"] = c["site"].get("lang") or "ja"
+    c["site"]["theme_color"] = c["site"].get("theme_color") or "#ecebe8"
 
     out.mkdir(parents=True, exist_ok=True)
     img_dir = out / "assets" / "img"
+    exts = ["jpg", "webp"] + (["avif"] if use_avif else [])
     photos = {}
     for slot, spec in c["photos"].items():
         widths = sorted(spec["widths"])
-        largest = img_dir / f"{slot}-{widths[-1]}.jpg"
-        if skip_images and largest.exists():
+        files = [img_dir / f"{slot}-{w}.{ext}" for w in widths for ext in exts]
+        if skip_images and all(f.exists() for f in files):
             from PIL import Image
-            with Image.open(largest) as im:
+            with Image.open(img_dir / f"{slot}-{widths[-1]}.jpg") as im:
                 w, h = im.size
         else:
             w, h = images.export(brand / "photos" / spec["file"], img_dir, slot, widths,
-                                 spec.get("quality", images.JPEG_QUALITY), use_avif)
+                                 spec.get("quality") or images.JPEG_QUALITY, use_avif)
         photos[slot] = {"widths": widths, "w": w, "h": h, "mid": widths[len(widths) // 2],
-                        "focal": spec.get("focal", "")}
+                        "focal": spec.get("focal") or ""}
 
     og = c.get("og_image") or {"photo": c["hero"]["photo"], "y": 0.55}
     if not (skip_images and (img_dir / "og.jpg").exists()):
-        images.og_image(brand / "photos" / c["photos"][og["photo"]]["file"], img_dir / "og.jpg", og.get("y", 0.55))
+        y = og.get("y")
+        images.og_image(brand / "photos" / c["photos"][og["photo"]]["file"], img_dir / "og.jpg",
+                        0.55 if y is None else y)
 
     hero, phone = photos[c["hero"]["photo"]], photos[c["hero"]["photo_phone"]]
     r_h, r_v = hero["w"] / hero["h"], phone["w"] / phone["h"]
     theme_css = (brand / "theme.css").exists()
-    items = (c.get("activities") or {}).get("items", [])
+    items = (c.get("activities") or {}).get("items") or []
     ctx = {
         "c": c,
         "photos": photos,
@@ -263,6 +395,14 @@ def build(brand: Path, out: Path, skip_images: bool, use_avif: bool) -> dict:
         for m in PLACEHOLDER.finditer(re.sub(r"<[^>]+>", "", s)):
             placeholders.append({"where": describe(path, c), "text": m.group(0)})
     hash_links = sorted(set(re.findall(r'<a href="#">([^<]+)</a>', html)))
+    before_publish = []
+    if not c["join"].get("endpoint"):
+        before_publish.append("参加登録の送信先(join.endpoint)が空です。いまは登録がどこにも届きません")
+    if not c["site"].get("url"):
+        before_publish.append("公開する URL(site.url)が空です。SNS で共有したときの画像と og:url が出ません")
+    if not (c.get("measure") or {}).get("google_tag_id"):
+        before_publish.append("Google 広告の計測(measure)が空です。Ad Grants ではコンバージョンの計測が要ります")
+    unconfirmed = unconfirmed_facts(brand)
 
     where = {c["hero"]["photo"]: "パソコンの最初の画面", c["hero"]["photo_phone"]: "スマホの最初の画面"}
     if c.get("meetup"):
@@ -274,11 +414,12 @@ def build(brand: Path, out: Path, skip_images: bool, use_avif: bool) -> dict:
 
     readme = env.get_template("README.md.j2").render(
         **ctx, brand_name=brand.name, out_rel=_rel(out), out_name=out.name,
-        placeholders=placeholders, hash_links=hash_links, photo_rows=photo_rows,
+        placeholders=placeholders, hash_links=hash_links, photo_rows=photo_rows, unconfirmed=unconfirmed,
         credits=bool((c.get("credits") or {}).get("items")))
     (out / "README.md").write_text(readme, encoding="utf-8")
 
-    return {"warnings": warnings, "placeholders": placeholders, "hash_links": hash_links}
+    return {"warnings": warnings, "placeholders": placeholders, "hash_links": hash_links,
+            "before_publish": before_publish, "unconfirmed": unconfirmed}
 
 
 class _Lenient(dict):
@@ -289,6 +430,11 @@ class _Lenient(dict):
 
     def __getattr__(self, key):
         return self.get(key)
+
+    def __missing__(self, key):
+        # c.faq['items'] のように dict のメソッドと同じ名前を [] で読むとき、無い項目を None にする
+        # (そうしないと Jinja が dict.items を返し、組み立てが止まる)
+        return None
 
 
 def _wrap(v):
@@ -328,10 +474,16 @@ def main() -> int:
     print(f"組み立てました: {args.out}")
     for w in result["warnings"]:
         print(f"  注意: {w}")
-    if result["placeholders"]:
-        print("  公開前に決める仮の値:")
+    if result["placeholders"] or result["before_publish"]:
+        print("  公開の前に決めること:")
         for p in result["placeholders"]:
             print(f"    - {p['where']}: {p['text']}")
+        for b in result["before_publish"]:
+            print(f"    - {b}")
+    if result["unconfirmed"]:
+        print("  公開の前に運営が確かめる事実(facts.md の要確認):")
+        for u in result["unconfirmed"]:
+            print(f"    - {u}")
     if result["hash_links"]:
         print("  行き先がまだないリンク: " + "、".join(result["hash_links"]))
     return 0

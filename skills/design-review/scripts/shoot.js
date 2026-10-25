@@ -65,6 +65,9 @@ const { launch, pickViewports, parseArgs, openPage, loadAllImages, ensureDir } =
       await loadAllImages(page);
       await page.screenshot({ path: path.join(outDir, `${vp.name}_full.png`), fullPage: true });
       // 縦に長い画像は縮小されて読めないので、読める高さに切り分ける
+      // 前に撮った切り分けが残っていると、ページが短くなったときに古い画像を見てしまうので消す
+      const old = new RegExp(`^${vp.name}_full_\\d+\\.png$`);
+      for (const f of fs.readdirSync(outDir)) if (old.test(f)) fs.unlinkSync(path.join(outDir, f));
       const height = await page.evaluate(() => document.documentElement.scrollHeight);
       const slice = vp.width <= 480 ? 1200 : 1800;
       for (let i = 0, y = 0; y < height; i++, y += slice) {
