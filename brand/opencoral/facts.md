@@ -7,6 +7,7 @@
 - `open-coral-handbook/…`:[t012093/open-coral-handbook](https://github.com/t012093/open-coral-handbook)
 - `npo-open-community/…`:[t012093/npo-open-community](https://github.com/t012093/npo-open-community)(2024年の旧案。古い情報として扱う)
 - `docs/reports/…`:このリポジトリにある整理レポートとデザインリサーチ
+- 人から聞いて決まったこと(日時や会場など)は、「依頼(2026-10-25、運営チームから)」のように、日付とだれから聞いたかを書く
 
 ## 団体
 

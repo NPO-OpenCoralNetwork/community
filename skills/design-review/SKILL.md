@@ -15,33 +15,38 @@ metadata:
 
 ## 手順
 
-1. **ページを配信する。** スクリプトはブラウザで実際に開いて測るので、ローカルのサーバーを立てる。
+1. **ページを配信する。** スクリプトはブラウザで実際に開いて測るので、ローカルのサーバーを立てる。8000 番が使われていれば、別の番号にして、下の URL も合わせる。
 
    ```sh
    python3 -m http.server 8000 --directory sites/<団体>-lp
    ```
 
-2. **スクリプトを実行する。** 書き出し先は `review/<日付>/` などにする。
+2. **スクリプトを実行する。** 書き出し先は `review/<団体>-<日付>/` にする(同じ日に別の団体を点検しても重ならない)。お礼ページ(`thanks.html`)も点検する。
 
    ```sh
-   node skills/design-review/scripts/shoot.js http://localhost:8000/ review/<日付>/shots
-   node skills/design-review/scripts/audit.js http://localhost:8000/ review/<日付>
-   node skills/design-review/scripts/form_test.js http://localhost:8000/ review/<日付>
+   node skills/design-review/scripts/shoot.js http://localhost:8000/ review/<団体>-<日付>/shots
+   node skills/design-review/scripts/audit.js http://localhost:8000/ review/<団体>-<日付>
+   node skills/design-review/scripts/form_test.js http://localhost:8000/ review/<団体>-<日付>
+   node skills/design-review/scripts/shoot.js http://localhost:8000/thanks.html review/<団体>-<日付>/thanks --viewports desktop,phone
+   node skills/design-review/scripts/audit.js http://localhost:8000/thanks.html review/<団体>-<日付>/thanks
    ```
+
+   使えるポートが決められている環境では、`form_test.js` に `--mock-port <番号>` を付けて、仮の送信先のポートを決める。
 
    | スクリプト | 分かること |
    | --- | --- |
-   | `shoot.js` | 5つの画面の大きさのスクリーンショット、ページの長さ(画面数)、横のはみ出し、最初の画面のボタンが見えるか、転送量、エラー |
-   | `audit.js` | 写真の上と無地の上の文字のコントラスト、改行(1〜2文字だけの行、行頭の句読点)、押せるところの大きさ、画像の読み込み、仮の値、行き先のないリンク、フォームのラベルと欄の名前、見出しの順番、和文の中の半角のかっこ |
+   | `shoot.js` | 5つの画面の大きさのスクリーンショット(パソコン、スマホ 390px と 320px はページ全体と、読める高さに切り分けたもの)、ページの長さ(画面数)、横のはみ出し、最初の画面のボタンが見えるか、転送量、エラー |
+   | `audit.js` | 写真の上と無地の上の文字のコントラスト、改行(1〜2文字だけの行、行頭の句読点、数字や時刻の途中、短い語の途中。閉じた「よくある質問」の答えも見る)、押せるところの大きさ、画像の読み込み、仮の値(角括弧、「（仮）」「未定」)、行き先のないリンク、フォームのラベルと欄の名前、見出しの順番、和文の中の半角のかっこ |
    | `form_test.js` | 参加登録フォームの入力チェック、送信、失敗したとき、ボット対策、スマホ下部のボタンの出し入れ |
 
-3. **スクリーンショットを見る。** 少なくとも `desktop_first.png`、`phone_first.png`、`desktop_full.png`、`phone_full.png` を開いて見る。数字だけで判断しない。
+3. **スクリーンショットを見る。** 少なくとも `desktop_first.png` と `phone_first.png`、それにページ全体を切り分けた `desktop_full_01.png`…、`phone_full_01.png`…、`small_full_01.png`… を順に開いて、すべての行を読む。数字だけで判断しない。
 4. **観点ごとに確かめる。** [references/lenses.md](references/lenses.md) の5つの観点(見た目、使いやすさ、日本語、広告の着地ページ、コード)を順に見て、指摘を [references/verify.md](references/verify.md) の形で書き出す。
    - Claude Code では、観点ごとにサブエージェントへ並行して任せてもよい。ほかの環境では順に見る。
 5. **指摘を確かめる。** 1件ずつ、もう一度見る・測る、反証を探す、直し方が悪さをしないかを考える。確かめられなかった指摘は捨てる。
 6. **報告する、または直す。**
    - 点検だけを頼まれたら、確かめた指摘を重さの順に報告する。
    - 直すことも頼まれたら、lp-build の `content.yaml`、`theme.css`、テンプレートのどれかを直して組み立て直し、手順2からやり直して、直ったことと悪くなったところがないことを確かめる。
+   - 直す範囲:依頼に関係する問題と、自分の変更で起きた問題は直す。依頼と関係のない前からの問題は、直し方を添えて報告にとどめる(「全部直して」と頼まれたら直す)。
 
 ## 判断の基準
 

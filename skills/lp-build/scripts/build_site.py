@@ -16,6 +16,7 @@ import argparse
 import re
 import shutil
 import sys
+from datetime import date
 from pathlib import Path
 
 import yaml
@@ -35,7 +36,11 @@ HERO_MAX_H_PHONE = 844
 SIZES_HALF = "(max-width: 760px) calc(100vw - 32px), (max-width: 1023px) calc(46vw - 12px), 680px"
 SIZES_WIDE = "(max-width: 760px) calc(100vw - 32px), (max-width: 1270px) 92vw, 1168px"
 
-PLACEHOLDER = re.compile(r"\[[^\[\]\s<>]{1,24}\]")
+# 仮の値: [日時] のような角括弧と、「（仮）」「未定」などの印
+PLACEHOLDER = re.compile(r"\[[^\[\]<>\n]{1,60}\]|[^\s、。\[\]<>]{0,12}(?:（仮）|\(仮\)|未定|TBD)")
+# 日付と曜日: 「2026年11月14日（土）」「11月14日(土)」
+DATE_WITH_WEEKDAY = re.compile(r"(?:(\d{4})年)?(\d{1,2})月(\d{1,2})日\s*[（(]([月火水木金土日])[)）]")
+WEEKDAYS = "月火水木金土日"
 
 
 class BuildError(Exception):
@@ -92,6 +97,22 @@ def validate(c: dict, brand: Path) -> list[str]:
     if errors:
         raise BuildError("\n".join(errors))
 
+    required = {
+        "site": ["title", "description", "og_title", "og_description"],
+        "org": ["mark", "footer_lines"],
+        "hero": ["headline", "sub", "caption", "photo", "photo_phone", "alt"],
+        "join": ["heading", "lead", "name_label", "email_label", "done_heading", "done_text"],
+        "thanks": ["title", "heading", "text", "back"],
+    }
+    for section, keys in required.items():
+        for k in keys:
+            if not (c.get(section) or {}).get(k):
+                errors.append(f"{section}.{k} がありません(必ず書く項目です。書き方は content-guide.md)")
+    if not c.get("cta"):
+        errors.append("cta(ボタンの文言)がありません")
+    if errors:
+        raise BuildError("\n".join(errors))
+
     photos = c["photos"]
     for slot, spec in photos.items():
         f = brand / "photos" / spec.get("file", "")
@@ -131,6 +152,8 @@ def validate(c: dict, brand: Path) -> list[str]:
         if n["href"].startswith("#") and n["href"] not in targets:
             errors.append(f"メニュー「{n['label']}」の行き先 {n['href']} がページにありません")
 
+    warnings.extend(check_weekdays(c))
+
     for path, s in walk_strings(c):
         if "{{" in s or "}}" in s:
             errors.append(f"{'.'.join(map(str, path))} にテンプレートの記号が残っています")
@@ -140,6 +163,30 @@ def validate(c: dict, brand: Path) -> list[str]:
     if errors:
         raise BuildError("\n".join(errors))
     return warnings
+
+
+def check_weekdays(c: dict, today: date | None = None) -> list[str]:
+    """日付と曜日が合っているかを確かめる。年がなければ、今日から1年以内のその日付で確かめる。"""
+    today = today or date.today()
+    out = []
+    for path, s in walk_strings(c):
+        plain = re.sub(r"<[^>]+>", "", s)
+        for m in DATE_WITH_WEEKDAY.finditer(plain):
+            year, month, day, wd = m.group(1), int(m.group(2)), int(m.group(3)), m.group(4)
+            try:
+                if year:
+                    d = date(int(year), month, day)
+                else:
+                    d = date(today.year, month, day)
+                    if d < today:
+                        d = date(today.year + 1, month, day)
+            except ValueError:
+                out.append(f"{describe(path, c)}: 「{m.group(0)}」は存在しない日付です")
+                continue
+            actual = WEEKDAYS[d.weekday()]
+            if actual != wd:
+                out.append(f"{describe(path, c)}: 「{m.group(0)}」の曜日が違います。{d.year}年{month}月{day}日は{actual}曜日です。依頼した人に確かめてください")
+    return out
 
 
 def act_layouts(n: int) -> list[str]:
@@ -192,8 +239,10 @@ def build(brand: Path, out: Path, skip_images: bool, use_avif: bool) -> dict:
         "hero_sizes_phone": f"max(100vw, min({fmt_num(r_v * 100)}vh, {round(r_v * HERO_MAX_H_PHONE)}px))",
     }
 
+    # finalize: 書かれていない任意の項目(None)を「None」と出さず、空にする
     env = Environment(loader=FileSystemLoader(str(TEMPLATE_DIR)), autoescape=False,
-                      keep_trailing_newline=True, undefined=StrictUndefined)
+                      keep_trailing_newline=True, undefined=StrictUndefined,
+                      finalize=lambda v: "" if v is None else v)
     env.filters["kern"] = kern
     # StrictUndefined でも、任意の項目は if で確かめられるように「無い」を None で返す
     c_safe = _Lenient(c)

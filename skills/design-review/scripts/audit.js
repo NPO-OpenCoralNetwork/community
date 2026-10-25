@@ -64,10 +64,12 @@ async function pageChecks(page) {
 
     // 仮の値、残った記号、行き先のないリンク
     const text = document.body.innerText;
-    const ph = [...new Set(text.match(/\[[^\[\]\n]{1,24}\]/g) || [])];
+    const ph = [...new Set([...(text.match(/\[[^\[\]\n]{1,60}\]/g) || []), ...(text.match(/[^\s、。]{0,12}(（仮）|\(仮\)|未定|TBD)/g) || [])])];
     if (ph.length) add(WARN, '仮の値', `公開前に決めること: ${ph.join('、')}`);
     if (/\{\{|\}\}/.test(document.documentElement.innerHTML)) add(NG, '仮の値', 'テンプレートの記号 {{ }} が残っています');
     if (/TODO/.test(text)) add(NG, '仮の値', 'TODO が表示されています');
+    const broken = [...new Set(text.match(/(^|[^A-Za-z])(None|undefined|null|NaN)(?![A-Za-z])/g) || [])].map((m) => m.trim());
+    if (broken.length) add(NG, '仮の値', `組み立ての誤りで出た文字があります: ${broken.join('、')}`);
     const dead = [...new Set([...document.querySelectorAll('a[href="#"]')].map((a) => a.textContent.trim()))];
     if (dead.length) add(WARN, 'リンク', `行き先がまだないリンク: ${dead.join('、')}`);
     for (const a of document.querySelectorAll('a[href^="#"]')) {
@@ -100,8 +102,9 @@ async function pageChecks(page) {
     if (hits.length) add(WARN, '日本語', `和文の中に半角のかっこやコロンがあります: ${hits.map((h) => `「${h}」`).join(' ')}`);
 
     // 大見出しの書体で palt が効くか
+    // テンプレートが見出しの約物を個別に詰めている(.pt)ときは、確かめ済みなので出さない
     const h1 = h1s[0];
-    if (h1) {
+    if (h1 && !h1.querySelector('.pt')) {
       const cs = getComputedStyle(h1);
       const probe = (feature) => {
         const s = document.createElement('span');
@@ -180,40 +183,79 @@ async function viewportChecks(page, vp) {
       if (small.length) add(WARN, '押しやすさ', `高さ 44px 未満: ${small.slice(0, 8).join('、')}`);
     }
 
-    // 改行: 1〜2文字だけの最後の行、行頭の句読点
+    // 改行: 1〜2文字だけの最後の行、行頭の句読点、数字や時刻の途中、短い語の途中
+    // 閉じている「よくある質問」の答えも見るため、一時的に開く
+    const closed = [...document.querySelectorAll('details:not([open])')];
+    closed.forEach((d) => d.setAttribute('open', ''));
     const punct = /[、。，．」』）〕】！？!?]/;
-    const blocks = document.querySelectorAll('h1 > span, h2, h3, p, li, summary, figcaption, dd, legend, .consent > span');
+    const numChar = /[0-9０-９:：〜~]/;
+    const seg = typeof Intl.Segmenter === 'function' ? new Intl.Segmenter('ja', { granularity: 'word' }) : null;
+    const blocks = document.querySelectorAll('h1 > span, h2, h3, p, li, summary, figcaption, dt, dd, legend, .consent > span');
     const widows = [];
     const heads = [];
+    const numBreaks = [];
+    const wordBreaks = [];
+    const around = (text, i) => `「${text.slice(Math.max(0, i - 6), i).trim()}/${text.slice(i, i + 6).trim()}」`;
     for (const el of blocks) {
-      if (!visible(el) || el.closest('[aria-hidden="true"], .visually-hidden, details:not([open]) > p')) continue;
+      if (!visible(el) || el.closest('[aria-hidden="true"], .visually-hidden')) continue;
       if (el.querySelector('h1, h2, h3, p, li')) continue; // 入れ物は数えない
+      const tolerance = parseFloat(getComputedStyle(el).fontSize) * 0.5;
+      const chars = [];
       const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
-      const lines = new Map();
       let node;
       while ((node = walker.nextNode())) {
         for (let i = 0; i < node.length; i++) {
           const ch = node.data[i];
-          if (/\s/.test(ch)) continue;
-          const r = document.createRange();
-          r.setStart(node, i);
-          r.setEnd(node, i + 1);
-          const rc = r.getClientRects()[0];
-          if (!rc) continue;
-          const key = Math.round(rc.top / 4);
-          if (!lines.has(key)) lines.set(key, []);
-          lines.get(key).push(ch);
+          let top = null;
+          if (!/\s/.test(ch)) {
+            const r = document.createRange();
+            r.setStart(node, i);
+            r.setEnd(node, i + 1);
+            const rc = r.getClientRects()[0];
+            if (rc) top = rc.top;
+          }
+          chars.push({ ch, top });
         }
       }
-      const ls = [...lines.entries()].sort((a, b) => a[0] - b[0]).map((e) => e[1].join(''));
-      if (ls.length < 2) continue;
+      let line = -1;
+      let lineTop = null;
+      const breaks = [];
+      chars.forEach((c, i) => {
+        if (c.top === null) { c.line = line; return; }
+        if (lineTop === null || Math.abs(c.top - lineTop) > tolerance) {
+          line++;
+          lineTop = c.top;
+          if (line > 0) breaks.push(i);
+        }
+        c.line = line;
+      });
+      if (line < 1) continue;
+      const text = chars.map((c) => c.ch).join('');
+      const lines = [];
+      chars.forEach((c) => { if (c.top !== null) (lines[c.line] = lines[c.line] || []).push(c.ch); });
+      const ls = lines.map((l) => l.join(''));
       const last = ls[ls.length - 1];
-      const body = last.replace(new RegExp(punct.source, 'g'), '');
-      if (body.length <= 2) widows.push(`「…${ls[ls.length - 2].slice(-6)}/${last}」`);
+      if (last.replace(new RegExp(punct.source, 'g'), '').length <= 2) widows.push(`「…${ls[ls.length - 2].slice(-6)}/${last}」`);
       for (const l of ls.slice(1)) if (punct.test(l[0])) heads.push(`「${l.slice(0, 8)}」`);
+      for (const i of breaks) {
+        let j = i - 1;
+        while (j >= 0 && /\s/.test(text[j])) j--;
+        if (j >= 0 && numChar.test(text[j]) && numChar.test(text[i])) numBreaks.push(around(text, i));
+      }
+      if (seg) {
+        for (const w of seg.segment(text)) {
+          if (!w.isWordLike || w.segment.length < 2 || w.segment.length > 8) continue;
+          // ひらがなを含む切れ目は判定が当てにならないので、カタカナ語、漢字の熟語、英数字の語だけを見る
+          if (!/^[\p{Script=Katakana}ー]+$|^\p{Script=Han}+$|^[A-Za-z0-9]+$/u.test(w.segment)) continue;
+          for (const i of breaks) if (i > w.index && i < w.index + w.segment.length) wordBreaks.push(around(text, i));
+        }
+      }
     }
+    closed.forEach((d) => d.removeAttribute('open'));
     if (widows.length) add(WARN, '改行', `最後の行が1〜2文字: ${widows.slice(0, 10).join(' ')}`);
     if (heads.length) add(NG, '改行', `行頭に句読点: ${heads.slice(0, 6).join(' ')}`);
+    if (numBreaks.length) add(NG, '改行', `数字や時刻の途中で改行: ${[...new Set(numBreaks)].slice(0, 6).join(' ')}`);
+    if (wordBreaks.length) add(WARN, '改行', `語の途中で改行: ${[...new Set(wordBreaks)].slice(0, 8).join(' ')}`);
 
     // 無地の上の文字のコントラスト(写真の上は別に測る)
     const parse = (c) => (c.match(/[\d.]+/g) || []).map(Number);

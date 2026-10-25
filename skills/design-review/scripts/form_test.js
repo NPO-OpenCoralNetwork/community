@@ -4,9 +4,10 @@
 // [data-hero-cta]、[data-sticky-cta]、#join)を使う。
 //
 // 使い方:
-//   node form_test.js http://localhost:8000/ [review]
+//   node form_test.js http://localhost:8000/ [review] [--mock-port 8799]
 //
 // 送信先のかわりに、ローカルに仮の送信先(成功、500 エラー)を立てて確かめる。
+// 仮の送信先のポートは、--mock-port で決められる(省くと空いている番号を使う)。
 // 終了コード: 失敗があれば 1
 'use strict';
 
@@ -15,7 +16,7 @@ const path = require('path');
 const fs = require('fs');
 const { launch, parseArgs, openPage, ensureDir } = require('./lib');
 
-function mockEndpoint() {
+function mockEndpoint(port = 0) {
   const received = [];
   const server = http.createServer((req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -30,17 +31,17 @@ function mockEndpoint() {
       res.end('{"ok":true}');
     });
   });
-  return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve({ server, received, base: `http://127.0.0.1:${server.address().port}` })));
+  return new Promise((resolve) => server.listen(port, '127.0.0.1', () => resolve({ server, received, base: `http://127.0.0.1:${server.address().port}` })));
 }
 
 (async () => {
-  const { pos } = parseArgs(process.argv.slice(2));
+  const { pos, opts } = parseArgs(process.argv.slice(2));
   const [url, outDir] = pos;
   if (!url) {
-    console.error('使い方: node form_test.js <URL> [書き出し先]');
+    console.error('使い方: node form_test.js <URL> [書き出し先] [--mock-port 番号]');
     process.exit(1);
   }
-  const mock = await mockEndpoint();
+  const mock = await mockEndpoint(opts['mock-port'] ? Number(opts['mock-port']) : 0);
   const browser = await launch();
   const results = [];
   const record = (name, ok, detail = '') => {

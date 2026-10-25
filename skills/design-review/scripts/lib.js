@@ -71,9 +71,28 @@ async function openPage(browser, url, vp) {
   return { context, page, log };
 }
 
+// 遅延読み込みの写真をすべて読み込ませる(ページ全体を撮る前に使う)。最後に一番上へ戻る
+async function loadAllImages(page) {
+  await page.evaluate(async () => {
+    const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+    const step = Math.round(window.innerHeight * 0.8);
+    for (let y = 0; y < document.documentElement.scrollHeight; y += step) {
+      window.scrollTo({ top: y, behavior: 'instant' });
+      await wait(120);
+    }
+    await Promise.all([...document.images].map((img) => (img.complete ? null : new Promise((r) => {
+      img.addEventListener('load', r, { once: true });
+      img.addEventListener('error', r, { once: true });
+      setTimeout(r, 8000);
+    }))));
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  });
+  await page.waitForTimeout(500);
+}
+
 function ensureDir(dir) {
   fs.mkdirSync(dir, { recursive: true });
   return dir;
 }
 
-module.exports = { VIEWPORTS, launch, pickViewports, parseArgs, openPage, ensureDir };
+module.exports = { VIEWPORTS, launch, pickViewports, parseArgs, openPage, loadAllImages, ensureDir };
