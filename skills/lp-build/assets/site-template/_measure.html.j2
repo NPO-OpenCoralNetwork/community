@@ -1,0 +1,15 @@
+{#- Google 広告の計測タグ。content.yaml の measure に ID を書くと、組み立てたときに入る -#}
+{%- macro measure_tags(m, conversion=false) -%}
+{%- if m and m.google_tag_id %}
+<script async src="https://www.googletagmanager.com/gtag/js?id={{ m.google_tag_id }}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '{{ m.google_tag_id }}');
+{%- if conversion and m.conversion_send_to %}
+  gtag('event', 'conversion', { send_to: '{{ m.conversion_send_to }}' });
+{%- endif %}
+</script>
+{%- endif %}
+{%- endmacro %}
