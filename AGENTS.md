@@ -14,9 +14,9 @@
 ## プラグイン
 
 - ほかのリポジトリでは、このリポジトリをマーケットプレイス(名前は `opencoral`)として追加し、`lp-designer` を入れて使う。入れ方は [plugins/lp-designer/README.md](plugins/lp-designer/README.md)。
-- **プラグインの中身を変えたら、版を上げる。** `plugins/lp-designer/.claude-plugin/plugin.json` と `plugins/lp-designer/plugin.json` の `version` を同じ値に上げる。上げないと、入れている人に変更が届かない。
+- **Claude Code 用の `plugins/lp-designer/.claude-plugin/plugin.json` には `version` を書かない。** 書かなければ、`main` に入ったコミットがそのまま新しい版として届く。書くと、その値を変えるまで届かなくなる。Codex など向けの `plugins/lp-designer/plugin.json` の `version` は、中身を大きく変えたときに上げる。
 - 変えたら `claude plugin validate plugins/lp-designer` と `claude plugin validate .` で確かめる。
-- このリポジトリでは、同じスキルが2つ並ばないよう、プラグインを無効にしてある(`.claude/settings.json`)。
+- このリポジトリでは、同じスキルが2つ並ばないよう、プラグインを無効にしてある(`.claude/settings.json`)。それでもプラグイン版(`lp-designer:lp-build` など)が読み込まれているときは、使わない。使うのはリンクから読み込まれる `lp-build`、`design-review`(手元の変更が入っているほう)。
 
 ## 場所
 

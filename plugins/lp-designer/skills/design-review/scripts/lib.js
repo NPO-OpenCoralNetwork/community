@@ -15,10 +15,11 @@ const VIEWPORTS = [
 ];
 
 function loadPlaywright() {
-  // スクリプトの場所(プラグインのキャッシュのこともある)、実行したフォルダ、PW_PATH、グローバルの順に探す
+  // ページを作っているリポジトリ(実行したフォルダ)の Playwright を先に使う。スクリプトはプラグインの
+  // キャッシュにあることもあり、そこから探すと、上のフォルダにある別の版を拾うことがある
   const tries = [
-    () => require('playwright'),
     () => require(require.resolve('playwright', { paths: [process.cwd()] })),
+    () => require('playwright'),
     () => require(process.env.PW_PATH),
     () => require(path.join(execSync('npm root -g', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(), 'playwright')),
   ];

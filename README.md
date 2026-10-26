@@ -38,7 +38,7 @@ community/
 このリポジトリは、プラグインのマーケットプレイスにもなっています。Claude Code では、次の1行で入れられます。
 
 ```
-/plugin install lp-designer --marketplace NPO-OpenCoralNetwork/community
+/plugin install lp-designer --marketplace NPO-OpenCoralNetwork/community#main
 ```
 
 入れたあとは `/lp-designer:lp-build`、`/lp-designer:design-review` で呼べます。Claude Code on the web や Codex での使い方、チームへの配り方は [plugins/lp-designer/README.md](plugins/lp-designer/README.md) にあります。

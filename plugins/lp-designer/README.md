@@ -16,17 +16,17 @@
 セッションの中で、次を実行します。
 
 ```
-/plugin install lp-designer --marketplace NPO-OpenCoralNetwork/community
+/plugin install lp-designer --marketplace NPO-OpenCoralNetwork/community#main
 ```
 
 Claude Code 2.1.275 より前の版では、2回に分けます。
 
 ```
-/plugin marketplace add NPO-OpenCoralNetwork/community
+/plugin marketplace add NPO-OpenCoralNetwork/community#main
 /plugin install lp-designer@opencoral
 ```
 
-シェルからは `claude plugin marketplace add NPO-OpenCoralNetwork/community` と `claude plugin install lp-designer@opencoral` です。
+シェルからは `claude plugin marketplace add NPO-OpenCoralNetwork/community#main` と `claude plugin install lp-designer@opencoral` です。`#main` は、`main` ブランチから読むという指定です。
 
 あるリポジトリで作業する全員に使ってもらうときは、そのリポジトリの `.claude/settings.json` に次を書いてコミットします。フォルダを信頼した人の Claude Code に、マーケットプレイスが登録され、プラグインが読み込まれます。
 
@@ -34,7 +34,7 @@ Claude Code 2.1.275 より前の版では、2回に分けます。
 {
   "extraKnownMarketplaces": {
     "opencoral": {
-      "source": { "source": "github", "repo": "NPO-OpenCoralNetwork/community" }
+      "source": { "source": "github", "repo": "NPO-OpenCoralNetwork/community", "ref": "main" }
     }
   },
   "enabledPlugins": {
@@ -53,7 +53,7 @@ Claude Code 2.1.275 より前の版では、2回に分けます。
 ### Codex
 
 ```
-codex plugin marketplace add NPO-OpenCoralNetwork/community
+codex plugin marketplace add NPO-OpenCoralNetwork/community --ref main
 ```
 
 追加したマーケットプレイス「Open Coral Network」から lp-designer を入れます。Codex での動作は、まだ確かめていません。
@@ -62,6 +62,7 @@ codex plugin marketplace add NPO-OpenCoralNetwork/community
 
 - Python 3.9 以上と、`pip install pillow pyyaml jinja2 numpy`(AVIF の書き出しには Pillow 11.2 以上)
 - 点検に使う Node 18 以上と Playwright:`npm install -D playwright` と `npx playwright install chromium`
+- `.gitignore` に `node_modules/` と `review/` を入れる。`review/` には点検のスクリーンショットが書き出されます。どちらもコミットしません
 
 ## 使い方
 
@@ -79,12 +80,13 @@ codex plugin marketplace add NPO-OpenCoralNetwork/community
 
 ## 更新
 
-- 新しい版を入れるには、`/plugin` の「Marketplaces」で opencoral を選び、「Update marketplace」を選びます。シェルからは `claude plugin update lp-designer@opencoral` です。
+- Claude Code では、`main` に入ったコミットがそのまま新しい版になります。入れるには、`/plugin` の「Marketplaces」で opencoral を選び、「Update marketplace」を選びます。シェルからは `claude plugin update lp-designer@opencoral` です。
 - 自動で更新するには、同じ画面で「Enable auto-update」を選びます。
 
 ## プラグインを直す人へ
 
-- 中身は、このフォルダの `skills/` にあります。直したら、`.claude-plugin/plugin.json` と `plugin.json` の `version` を同じ値に上げます。上げないと、入れている人に変更が届きません。
-- `plugin.json` は Codex などが読む共通の形式(Agent Plugins)、`.claude-plugin/plugin.json` は Claude Code が読む形式です。
+- 中身は、このフォルダの `skills/` にあります。
+- `.claude-plugin/plugin.json` は Claude Code が読む形式です。`version` を書いていないので、Claude Code はコミットごとに版を分け、`main` に入った変更がそのまま届きます。`version` を書くと、その値を変えるまで変更が届かなくなるので、書かないでください。
+- `plugin.json` は Codex などが読む共通の形式(Agent Plugins)です。中身を大きく変えたら、この `version` を上げます。
 - 確かめるコマンド(リポジトリのルートで):`claude plugin validate plugins/lp-designer` と `claude plugin validate .`
 - `NPO-OpenCoralNetwork/community` の中では、プラグインを入れなくても、`.claude/skills/` と `.agents/skills/` のリンクからスキルが読み込まれます。同じスキルが2つ並ばないよう、このリポジトリではプラグインを無効にしてあります(`.claude/settings.json`)。

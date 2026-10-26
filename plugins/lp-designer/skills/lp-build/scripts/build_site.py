@@ -412,13 +412,15 @@ def build(brand: Path, out: Path, skip_images: bool, use_avif: bool) -> dict:
     photo_rows = [{"slot": f"{slot}-*", "where": where.get(slot, "(使っていない)"),
                    "widths": "・".join(map(str, p["widths"]))} for slot, p in photos.items()]
 
-    # README に書く組み立てのコマンド。スキルがこのリポジトリの中にあれば相対パス、
-    # プラグインとして別の場所に入っていれば <lp-build> と書く
+    # README に書く組み立てのコマンド。どこで実行しても同じ README になるよう、パスは団体のフォルダがある
+    # リポジトリのルートから書く。スキルがそのリポジトリの中にあれば相対パス、プラグインとして別の場所
+    # (プラグインのキャッシュなど)に入っていれば <lp-build> と書く
+    root = _repo_root(brand)
     script = SKILL_DIR / "scripts" / "build_site.py"
-    build_script_local = _inside_cwd(script)
+    build_script_local = script.resolve().is_relative_to(root) and not _in_plugin_cache(script)
     readme = env.get_template("README.md.j2").render(
-        **ctx, brand_name=brand.name, out_rel=_rel(out), out_name=out.name,
-        build_script=_rel(script) if build_script_local else "<lp-build>/scripts/build_site.py",
+        **ctx, brand_rel=_rel(brand, root), out_rel=_rel(out, root), out_name=out.name,
+        build_script=_rel(script, root) if build_script_local else "<lp-build>/scripts/build_site.py",
         build_script_local=build_script_local,
         placeholders=placeholders, hash_links=hash_links, photo_rows=photo_rows, unconfirmed=unconfirmed,
         credits=bool((c.get("credits") or {}).get("items")))
@@ -451,19 +453,25 @@ def _wrap(v):
     return v
 
 
-def _inside_cwd(p: Path) -> bool:
-    try:
-        p.resolve().relative_to(Path.cwd().resolve())
-        return True
-    except ValueError:
-        return False
+def _repo_root(p: Path) -> Path:
+    """p を含む git リポジトリのルート。リポジトリの外なら、今いるフォルダ。"""
+    p = p.resolve()
+    for d in (p, *p.parents):
+        if (d / ".git").exists():
+            return d
+    return Path.cwd().resolve()
 
 
-def _rel(p: Path) -> str:
-    try:
-        return str(p.resolve().relative_to(Path.cwd().resolve()))
-    except ValueError:
-        return str(p)
+def _in_plugin_cache(p: Path) -> bool:
+    """Claude Code や Codex がプラグインを入れる場所(…/plugins/cache/…)の中か。"""
+    parts = p.resolve().parts
+    return any(a == "plugins" and b == "cache" for a, b in zip(parts, parts[1:]))
+
+
+def _rel(p: Path, base: Path) -> str:
+    """base からの相対パス。base の外なら、そのままのパス。"""
+    p = p.resolve()
+    return p.relative_to(base).as_posix() if p.is_relative_to(base) else str(p)
 
 
 def main() -> int:

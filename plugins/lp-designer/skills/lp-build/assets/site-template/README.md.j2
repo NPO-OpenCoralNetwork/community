@@ -2,10 +2,10 @@
 
 Google Ad Grants の検索広告から来た人に、無料の参加登録をしてもらうための1ページのサイトです。デザインは D3「夕方の写真」(写真を主役にしたページ)です。
 
-このフォルダは `brand/{{ brand_name }}/content.yaml` から組み立てたものです。文面や写真を変えるときは、HTML を直接直さず、`content.yaml` を直して組み立て直します。AI エージェントには「ページを組み立て直して」と頼みます(lp-build スキル)。手で組み立てるときは、次を実行します。
+このフォルダは `{{ brand_rel }}/content.yaml` から組み立てたものです。文面や写真を変えるときは、HTML を直接直さず、`content.yaml` を直して組み立て直します。AI エージェントには「ページを組み立て直して」と頼みます(lp-build スキル)。手で組み立てるときは、リポジトリのルートで次を実行します。
 
 ```sh
-python3 {{ build_script }} --brand brand/{{ brand_name }} --out {{ out_rel }}
+python3 {{ build_script }} --brand {{ brand_rel }} --out {{ out_rel }}
 ```
 {%- if not build_script_local %}
 
@@ -52,7 +52,7 @@ python3 {{ build_script }} --brand brand/{{ brand_name }} --out {{ out_rel }}
 {%- endif %}
 {%- if unconfirmed %}
 
-`brand/{{ brand_name }}/facts.md` で「要確認」とした次の事実も、公開の前に運営が確かめます。
+`{{ brand_rel }}/facts.md` で「要確認」とした次の事実も、公開の前に運営が確かめます。
 {% for f in unconfirmed %}
 - {{ f }}
 {%- endfor %}
@@ -94,7 +94,7 @@ Ad Grants では、毎月1件以上のコンバージョンを計測する必要
 - 差し替えたら(`og.jpg` も含めて)、`content.yaml` の `credits` を空にしてください。`og.jpg` は最初の画面と同じ写真から切り出しています。
 
 {% endif -%}
-写真の元のファイルは `brand/{{ brand_name }}/photos/` にあります。差し替えるときは元のファイルを置き換え、`content.yaml` の `alt`(写っている内容の説明)と `caption`(場所と時間帯)を新しい写真に合わせて書き換えてから、組み立て直します。
+写真の元のファイルは `{{ brand_rel }}/photos/` にあります。差し替えるときは元のファイルを置き換え、`content.yaml` の `alt`(写っている内容の説明)と `caption`(場所と時間帯)を新しい写真に合わせて書き換えてから、組み立て直します。
 
 | 写真 | 使う場所 | 書き出す幅 |
 | --- | --- | --- |
