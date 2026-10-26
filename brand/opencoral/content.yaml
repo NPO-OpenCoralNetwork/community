@@ -1,6 +1,6 @@
 # 参加登録ページ(D3「夕方の写真」)の中身
 #
-# - 文面の決まり: skills/lp-build/references/content-guide.md
+# - 文面の決まり: plugins/lp-designer/skills/lp-build/references/content-guide.md
 # - 事実は brand/opencoral/facts.md にあるものだけを使う
 # - 決まっていないことは書かないか、[日時] のように角括弧で示す(次の集まりの詳細とよくある質問だけ)
 # - 文字列の中では次の HTML が使える
@@ -8,7 +8,7 @@
 #     <wbr>                       改行してよい位置
 #     <br>                        改行
 #     <a href="…">…</a>          リンク
-# - 書き換えたら: python3 skills/lp-build/scripts/build_site.py --brand brand/opencoral --out sites/opencoral-lp
+# - 書き換えたら: python3 plugins/lp-designer/skills/lp-build/scripts/build_site.py --brand brand/opencoral --out sites/opencoral-lp
 
 site:
   lang: ja
@@ -141,7 +141,7 @@ join:
   done_heading: 参加登録を受け付けました。
   done_text: 次の集まりの日程と、参加者のチャットへの招待を、メールでお送りします。
 
-# Google 広告の計測。送信先(join.endpoint)を決めたあとに書く。書き方: skills/lp-build/references/ad-grants.md
+# Google 広告の計測。送信先(join.endpoint)を決めたあとに書く。書き方: plugins/lp-designer/skills/lp-build/references/ad-grants.md
 measure:
   google_tag_id: ""           # Google タグの ID(例: AW-123456789)
   conversion_send_to: ""      # コンバージョンの send_to(例: AW-123456789/AbCdEfGhIj)

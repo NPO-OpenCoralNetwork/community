@@ -15,7 +15,10 @@ const VIEWPORTS = [
 ];
 
 function loadPlaywright() {
+  // ページを作っているリポジトリ(実行したフォルダ)の Playwright を先に使う。スクリプトはプラグインの
+  // キャッシュにあることもあり、そこから探すと、上のフォルダにある別の版を拾うことがある
   const tries = [
+    () => require(require.resolve('playwright', { paths: [process.cwd()] })),
     () => require('playwright'),
     () => require(process.env.PW_PATH),
     () => require(path.join(execSync('npm root -g', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(), 'playwright')),
@@ -23,7 +26,7 @@ function loadPlaywright() {
   for (const t of tries) {
     try { return t(); } catch (_) { /* 次を試す */ }
   }
-  console.error('Playwright が見つかりません。リポジトリのルートで npm install と npx playwright install chromium を実行してください。');
+  console.error('Playwright が見つかりません。ページを作っているリポジトリのルートで npm install -D playwright と npx playwright install chromium を実行してください。');
   process.exit(2);
 }
 
