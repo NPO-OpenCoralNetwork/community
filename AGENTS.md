@@ -20,7 +20,7 @@
 
 ## 場所
 
-- `brand/<団体>/`:団体ごとの事実(`facts.md`)、文面(`content.yaml`)、団体の情報のページ(`pages.yaml`)、デザインの決まり(`design.md`)、写真(`photos/`)、Google 広告の案(`ads.md`)。ページの文面を変えたら、`ads.md` の広告の文とキーワードも見直す
+- `brand/<団体>/`:団体ごとの事実(`facts.md`)、文面(`content.yaml`)、団体の情報のページ(`pages.yaml`)、デザインの決まり(`design.md`)、写真(`photos/`)、Google 広告の案(`ads.md`)、集まりの進め方の案(`meetup.md`)。ページの文面を変えたら、`ads.md` の広告の文とキーワードも見直す
 - `sites/<団体>-lp/`:組み立てたページ。`content.yaml` から作るので、手で直さない
 - `docs/reports/`:構想の整理レポートとデザインリサーチ
 
