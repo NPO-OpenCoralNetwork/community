@@ -26,9 +26,9 @@ org:
     - 特定非営利活動法人 <span class="nw">Open Coral Network</span>
     - 法人番号 9230005009484
   links:
-    - { label: 団体について, href: "#" }
-    - { label: プライバシーポリシー, href: "#" }
-    - { label: お問い合わせ, href: "#" }
+    - { label: 団体について, href: about.html }
+    - { label: プライバシーポリシー, href: privacy.html }
+    - { label: お問い合わせ, href: contact.html }
 
 # ページの主な行動は1つだけ。ボタンの文言はすべてこれを使う
 cta: 無料で参加登録する
@@ -137,7 +137,7 @@ join:
     - 何か一つ始めてみたい
     - 話せる仲間や居場所がほしい
   photo_consent: <span class="nw">集まりの記録写真に</span><span class="nw">写ってもかまいません<span class="req">任意</span></span><br>顔がはっきり写る写真をサイトや広告に使うときは、あらためて書面で同意をいただきます。チェックしなくても参加できます。
-  note: 相談の内容や参加者のデータは、AIの学習に使いません（<a href="#">プライバシーポリシー</a>）。
+  note: 相談の内容や参加者のデータは、AIの学習に使いません（<a href="privacy.html">プライバシーポリシー</a>）。
   done_heading: 参加登録を受け付けました。
   done_text: 次の集まりの日程と、参加者のチャットへの招待を、メールでお送りします。
 

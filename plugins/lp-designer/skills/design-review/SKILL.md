@@ -31,7 +31,7 @@ metadata:
    node "${CLAUDE_SKILL_DIR}/scripts/audit.js" http://localhost:8000/thanks.html review/<団体>-<日付>/thanks
    ```
 
-   まとめて実行するときは `node "${CLAUDE_SKILL_DIR}/scripts/review.js" http://localhost:8000/ review/<団体>-<日付>` で、上の5つを順に実行する(途中で NG が出ても最後まで実行する)。
+   まとめて実行するときは `node "${CLAUDE_SKILL_DIR}/scripts/review.js" http://localhost:8000/ review/<団体>-<日付>` で、上の5つを順に実行する(途中で NG が出ても最後まで実行する)。参加登録ページからつないだ同じフォルダのページ(団体について、プライバシーポリシーなど)も見つけて、スクリーンショットを撮って点検する(書き出し先は `pages/<名前>/`)。手で点検するときは、そのページの URL を `shoot.js` と `audit.js` に渡す。
 
    「Playwright が見つかりません」と出たら、ページを作っているリポジトリで `npm install -D playwright` と `npx playwright install chromium` を実行する。
 

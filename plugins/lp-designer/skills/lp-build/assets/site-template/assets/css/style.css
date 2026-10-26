@@ -256,6 +256,21 @@ fieldset.field { border: 0; padding: 0; margin: 0; min-width: 0; }
 .thanks .body a { display: inline-flex; align-items: center; min-height: 44px; }
 .thanks h1 { font-size: clamp(28px, 4vw, 44px); font-weight: 600; line-height: 1.4; letter-spacing: -0.01em; }
 
+/* 団体の情報のページ(pages.yaml):団体について、プライバシーポリシー、お問い合わせ */
+.doc { padding: 72px 0 112px; }
+.doc .body { max-width: 40em; }
+.doc h1 { font-size: clamp(28px, 4vw, 44px); font-weight: 600; line-height: 1.4; letter-spacing: -0.01em; }
+.doc .lead { margin-top: 24px; }
+.doc section { display: flex; flex-direction: column; gap: 14px; margin-top: 56px; }
+.doc h2 { font-size: 22px; font-weight: 600; line-height: 1.5; letter-spacing: 0.01em; }
+.doc ul { display: flex; flex-direction: column; gap: 8px; }
+.doc li { position: relative; padding-left: 1.1em; }
+.doc li::before { content: ''; position: absolute; left: 0.2em; top: 0.85em; width: 5px; height: 5px; border-radius: 50%; background: var(--ink2); }
+.doc .details dd { font-weight: 400; }
+.doc .foot-note { margin-top: 56px; }
+.doc .back { margin-top: 56px; }
+.doc .back a { display: inline-flex; align-items: center; min-height: 44px; }
+
 /* sticky sign-up bar (phones) */
 .sticky-cta {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;

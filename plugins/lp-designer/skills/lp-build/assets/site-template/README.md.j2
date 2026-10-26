@@ -18,6 +18,9 @@ python3 {{ build_script }} --brand {{ brand_rel }} --out {{ out_rel }}
 {{ out_name }}/
 ├─ index.html          参加登録ページ(広告のリンク先)
 ├─ thanks.html         登録のあとに表示するお礼ページ(コンバージョンを数えるページ)
+{%- for p in pages %}
+├─ {{ '%-20s'|format(p.file) }}{{ p.heading }}{% if p.draft %}(下書き){% endif %}
+{%- endfor %}
 ├─ assets/css/style.css
 {%- if theme_css %}
 ├─ assets/css/theme.css   団体ごとの色や書体の上書き
@@ -47,6 +50,9 @@ python3 {{ build_script }} --brand {{ brand_rel }} --out {{ out_rel }}
 {%- if not (c.measure and c.measure.google_tag_id) %}
 | `content.yaml` の `measure` | 空(計測していない) | Google タグの ID とコンバージョンの `send_to`(下の「計測」) |
 {%- endif %}
+{%- for p in pages if p.draft %}
+| `{{ p.file }}` | 下書き | 団体で内容を確かめ、`{{ brand_rel }}/pages.yaml` の `draft: true` を消す |
+{%- endfor %}
 {%- if credits %}
 | 写真 | 仮置きの写真(下の「写真」を参照) | 実際に撮った写真 |
 {%- endif %}
