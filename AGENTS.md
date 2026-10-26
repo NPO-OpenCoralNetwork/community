@@ -47,4 +47,7 @@ python3 plugins/lp-designer/skills/lp-build/scripts/build_site.py --brand brand/
 # 点検する(別の端末でサーバーを立ててから)
 python3 -m http.server 8000 --directory sites/opencoral-lp
 node plugins/lp-designer/skills/design-review/scripts/review.js http://localhost:8000/ review
+
+# 広告の案を点検する(--write で字数の列を数え直す)
+python3 scripts/check_ads.py brand/opencoral/ads.md --site sites/opencoral-lp
 ```
