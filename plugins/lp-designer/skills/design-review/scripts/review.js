@@ -11,21 +11,32 @@
 'use strict';
 
 const path = require('path');
+const fs = require('fs');
+const { fileURLToPath } = require('url');
 const { spawnSync } = require('child_process');
 const { parseArgs } = require('./lib');
 
-// 参加登録ページの中の、同じフォルダのページへのリンク(about.html など)を集める
+// 参加登録ページの中の、同じフォルダのページへのリンク(about.html、./privacy.html など)を集める。
+// 探せなかったときは null を返す(点検しなかったページがあることを、失敗として知らせる)
 async function linkedPages(url) {
   try {
-    const html = await (await fetch(url)).text();
+    let html;
+    if (url.startsWith('file:')) {
+      const file = fileURLToPath(url);
+      html = fs.readFileSync(fs.statSync(file).isDirectory() ? path.join(file, 'index.html') : file, 'utf8');
+    } else {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      html = await res.text();
+    }
     const names = new Set();
-    for (const m of html.matchAll(/href="([a-z0-9][a-z0-9-]*)\.html(?:#[^"]*)?"/g)) {
+    for (const m of html.matchAll(/href=["'](?:\.\/)?([A-Za-z0-9_][A-Za-z0-9._-]*)\.html(?:[?#][^"']*)?["']/g)) {
       if (!['index', 'thanks'].includes(m[1])) names.add(m[1]);
     }
     return [...names];
   } catch (e) {
     console.error(`つないだページを探せませんでした: ${e.message}`);
-    return [];
+    return null;
   }
 }
 
@@ -45,13 +56,15 @@ async function linkedPages(url) {
     ['shoot.js', thanks, path.join(outDir, 'thanks'), '--viewports', 'desktop,phone'],
     ['audit.js', thanks, path.join(outDir, 'thanks')],
   ];
-  for (const name of await linkedPages(url)) {
+  const failed = [];
+  const linked = await linkedPages(url);
+  if (linked === null) failed.push('つないだページの点検(ページを探せませんでした)');
+  for (const name of linked || []) {
     const pageUrl = new URL(`${name}.html`, url).href;
     runs.push(['shoot.js', pageUrl, path.join(outDir, 'pages', name), '--viewports', 'desktop,phone']);
     runs.push(['audit.js', pageUrl, path.join(outDir, 'pages', name)]);
   }
 
-  const failed = [];
   for (const [script, ...args] of runs) {
     console.log(`\n== ${script} ${args.join(' ')}`);
     const r = spawnSync(process.execPath, [path.join(__dirname, script), ...args], { stdio: 'inherit' });

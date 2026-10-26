@@ -2,7 +2,7 @@
 #
 # - 文面の決まり: plugins/lp-designer/skills/lp-build/references/content-guide.md
 # - 事実は brand/opencoral/facts.md にあるものだけを使う
-# - 決まっていないことは書かないか、[日時] のように角括弧で示す(次の集まりの詳細とよくある質問だけ)
+# - 決まっていないことは書かないか、[日時] のように角括弧で示す(次の集まりの詳細とよくある質問だけ。団体の情報のページは pages.yaml)
 # - 文字列の中では次の HTML が使える
 #     <span class="nw">…</span>  改行させたくない語
 #     <wbr>                       改行してよい位置

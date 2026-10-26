@@ -133,7 +133,8 @@ def check_shape(node, shape, path=()) -> list[str]:
     if isinstance(shape, list):
         if not isinstance(node, list):
             return [f"{where} はリストで書きます(1つずつ「- 」で始める)"]
-        return [e for i, v in enumerate(node) for e in check_shape(v, shape[0], path + (i,))]
+        empty = [f"{where}.{i} が空です(「- 」だけの行を消すか、中身を書く)" for i, v in enumerate(node) if v is None]
+        return empty + [e for i, v in enumerate(node) if v is not None for e in check_shape(v, shape[0], path + (i,))]
     is_num = isinstance(node, (int, float)) and not isinstance(node, bool)
     ok = {TEXT: isinstance(node, str), FLAG: isinstance(node, bool), NUM: is_num,
           INT: is_num and isinstance(node, int)}[shape]
@@ -271,15 +272,6 @@ def validate(c, brand: Path) -> list[str]:
             if not s.get("heading"):
                 errors.append(f"pages.yaml のページ {slug} の sections の {i + 1} つ目に heading がありません")
 
-    # 同じフォルダのページ(about.html など)へのリンクは、つなぎ先がなければ止める
-    known = {"index.html", "thanks.html"} | {f"{slug}.html" for slug in pages}
-    for path, s in walk_strings(c):
-        hrefs = re.findall(r'href="([^"]*)"', s) + ([s] if path and path[-1] == "href" else [])
-        for h in hrefs:
-            target = h.split("#")[0]
-            if re.fullmatch(r"[a-z0-9][a-z0-9-]*\.html", target) and target not in known:
-                errors.append(f"{describe(path, c)} のリンク先 {target} がありません(pages.yaml にページを書くか、リンクを直す)")
-
     warnings.extend(check_weekdays(c))
 
     for path, s in walk_strings(c):
@@ -291,6 +283,24 @@ def validate(c, brand: Path) -> list[str]:
     if errors:
         raise BuildError("\n".join(errors))
     return warnings
+
+
+def page_files(c: dict) -> set[str]:
+    """組み立てる HTML のファイル名。"""
+    return {"index.html", "thanks.html"} | {f"{slug}.html" for slug in (c.get("pages") or {})}
+
+
+def check_links(c: dict, known: set[str]) -> None:
+    """同じフォルダのページ(about.html、./privacy.html など)へのリンクに、つなぎ先があるかを確かめる。"""
+    errors = []
+    for path, s in walk_strings(c):
+        hrefs = re.findall(r"""href=["']([^"']*)["']""", s) + ([s] if path and path[-1] == "href" else [])
+        for h in hrefs:
+            target = re.sub(r"^\./", "", re.split(r"[?#]", h)[0])
+            if re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9._-]*\.html", target) and target not in known:
+                errors.append(f"{describe(path, c)} のリンク先 {target} がありません(pages.yaml にページを書くか、リンクを直す)")
+    if errors:
+        raise BuildError("\n".join(errors))
 
 
 def _date_or_none(y: int, m: int, d: int) -> date | None:
@@ -420,17 +430,19 @@ def build(brand: Path, out: Path, skip_images: bool, use_avif: bool) -> dict:
     c_safe = _Lenient(c)
     ctx["c"] = c_safe
 
-    html = env.get_template("index.html.j2").render(**ctx)
-    (out / "index.html").write_text(html, encoding="utf-8")
-    written = [html, env.get_template("thanks.html.j2").render(**ctx)]
-    (out / "thanks.html").write_text(written[-1], encoding="utf-8")
+    # すべてのページを組み立ててから書き出す。途中で止まっても、古い HTML と新しい HTML が混ざらない
     pages = c.get("pages") or {}
+    rendered = {"index.html": env.get_template("index.html.j2").render(**ctx),
+                "thanks.html": env.get_template("thanks.html.j2").render(**ctx)}
     for slug in pages:
-        written.append(env.get_template("page.html.j2").render(**ctx, page=c_safe["pages"][slug]))
-        (out / f"{slug}.html").write_text(written[-1], encoding="utf-8")
+        rendered[f"{slug}.html"] = env.get_template("page.html.j2").render(**ctx, page=c_safe["pages"][slug])
+    # 手で置いたページ(書き出し先にある HTML)へのリンクは認める
+    existing = {p.name for p in out.glob("*.html")}
+    check_links(c, page_files(c) | existing)
+    for name, text in rendered.items():
+        (out / name).write_text(text, encoding="utf-8")
     # pages.yaml から消したページの HTML が残っていると、そのまま公開されてしまう
-    made = {"index.html", "thanks.html"} | {f"{slug}.html" for slug in pages}
-    stale = sorted(p.name for p in out.glob("*.html") if p.name not in made)
+    stale = sorted(existing - page_files(c))
     if stale:
         warnings.append(f"書き出し先に、今回は組み立てていない HTML があります: {'、'.join(stale)}。前に組み立てたページなら消します")
 
@@ -444,7 +456,7 @@ def build(brand: Path, out: Path, skip_images: bool, use_avif: bool) -> dict:
     for path, s in walk_strings(c):
         for m in PLACEHOLDER.finditer(re.sub(r"<[^>]+>", "", s)):
             placeholders.append({"where": describe(path, c), "text": m.group(0)})
-    hash_links = sorted({m for h in written for m in re.findall(r'<a href="#">([^<]+)</a>', h)})
+    hash_links = sorted({m for h in rendered.values() for m in re.findall(r'<a href="#">([^<]+)</a>', h)})
     before_publish = []
     if not c["join"].get("endpoint"):
         before_publish.append("参加登録の送信先(join.endpoint)が空です。いまは登録がどこにも届きません")
