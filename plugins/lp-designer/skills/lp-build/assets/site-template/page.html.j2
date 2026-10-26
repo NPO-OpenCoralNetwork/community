@@ -1,0 +1,93 @@
+{#- 団体の情報のページ(団体について、プライバシーポリシー、お問い合わせなど)。中身は brand/<団体>/pages.yaml -#}
+{%- from "_measure.html.j2" import measure_tags -%}
+<!doctype html>
+<html lang="{{ c.site.lang }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{{ page.title | e }}</title>
+{%- if page.draft %}
+<meta name="robots" content="noindex">
+{%- endif %}
+{%- if page.lead %}
+<meta name="description" content="{{ page.lead | striptags | e }}">
+{%- endif %}
+<meta name="theme-color" content="{{ c.site.theme_color }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..600&amp;family=Murecho:wght@400..600&amp;display=swap">
+<link rel="stylesheet" href="assets/css/style.css">
+{%- if theme_css %}
+<link rel="stylesheet" href="assets/css/theme.css">
+{%- endif %}
+{{- measure_tags(c.measure) }}
+</head>
+<body class="page-plain">
+<a class="skip" href="#main">本文へ移動</a>
+
+<header class="topbar">
+  <a class="mark" href="./">{% if c.org.mark_kind %}<span class="mark-kind">{{ c.org.mark_kind }}</span>{% endif %}{{ c.org.mark }}</a>
+</header>
+
+<main id="main" class="doc">
+  <div class="wrap">
+    <div class="body">
+{%- if page.draft %}
+      <p class="draft" role="note">このページは下書きです。内容はまだ確定していません。</p>
+{%- endif %}
+      <h1>{{ page.heading }}</h1>
+{%- if page.lead %}
+      <p class="lead">{{ page.lead }}</p>
+{%- endif %}
+{%- for s in page.sections or [] %}
+
+      <section>
+        <h2 class="h2">{{ s.heading }}</h2>
+{%- for p in s.paragraphs or [] %}
+        <p>{{ p }}</p>
+{%- endfor %}
+{%- if s['items'] %}
+        <ul>
+{%- for i in s['items'] %}
+          <li>{{ i }}</li>
+{%- endfor %}
+        </ul>
+{%- endif %}
+{%- if s.details %}
+        <dl class="details">
+{%- for d in s.details %}
+          <div><dt>{{ d.label }}</dt><dd>{{ d.value }}</dd></div>
+{%- endfor %}
+        </dl>
+{%- endif %}
+{%- for n in s.notes or [] %}
+        <p class="small">{{ n }}</p>
+{%- endfor %}
+      </section>
+{%- endfor %}
+{%- if page.footnote %}
+
+      <p class="small foot-note">{{ page.footnote }}</p>
+{%- endif %}
+
+      <p class="back"><a href="./">{{ c.thanks.back }}</a></p>
+    </div>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-row">
+    <div>
+      <a class="mark" href="./">{{ c.org.mark }}</a>
+      <p>{{ c.org.footer_lines | join('<br>') }}</p>
+    </div>
+    <nav aria-label="団体の情報">
+{%- for l in c.org.links or [] %}
+      <a href="{{ l.href }}">{{ l.label }}</a>
+{%- endfor %}
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

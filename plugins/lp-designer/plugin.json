@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "lp-designer",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "写真を主役にした参加登録ページ（デザイン D3「夕方の写真」）を、団体の事実と写真から組み立て（lp-build）、スクリーンショットと自動の点検で確かめる（design-review）スキル。",
   "author": {
     "name": "特定非営利活動法人 Open Coral Network",

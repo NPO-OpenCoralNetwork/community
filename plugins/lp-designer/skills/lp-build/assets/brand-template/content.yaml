@@ -1,7 +1,7 @@
 # 参加登録ページの中身(新しい団体用のひな形)
 #
 # 1. facts.md に、出典つきで事実を書く
-# 2. このファイルの TODO をすべて書き換える(書き方: lp-build スキルの references/content-guide.md)
+# 2. このファイルと pages.yaml の TODO をすべて書き換える(書き方: lp-build スキルの references/content-guide.md)
 # 3. photos/ に写真を置き、photos と credits を書く(決まり: lp-build スキルの references/photo-rules.md)
 # 4. 組み立てる: python3 <lp-build>/scripts/build_site.py --brand brand/<団体> --out sites/<団体>-lp
 #    (<lp-build> は lp-build スキルのフォルダ。AI エージェントには「ページを組み立てて」と頼めばよい)
@@ -24,9 +24,9 @@ org:
     - TODO 正式名称
     - TODO 法人番号
   links:
-    - { label: 団体について, href: "#" }
-    - { label: プライバシーポリシー, href: "#" }
-    - { label: お問い合わせ, href: "#" }
+    - { label: 団体について, href: about.html }
+    - { label: プライバシーポリシー, href: privacy.html }
+    - { label: お問い合わせ, href: contact.html }
 
 cta: 無料で参加登録する
 
@@ -121,7 +121,7 @@ join:
   interests:
     - TODO 広告グループに合わせた選択肢
   photo_consent: <span class="nw">集まりの記録写真に</span><span class="nw">写ってもかまいません<span class="req">任意</span></span><br>顔がはっきり写る写真をサイトや広告に使うときは、あらためて書面で同意をいただきます。チェックしなくても参加できます。
-  note: TODO データの扱いの要約（<a href="#">プライバシーポリシー</a>）。
+  note: TODO データの扱いの要約（<a href="privacy.html">プライバシーポリシー</a>）。
   done_heading: 参加登録を受け付けました。
   done_text: TODO 次に何が届くか
 

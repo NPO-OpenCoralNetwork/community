@@ -15,7 +15,9 @@
 | `[data-sticky-cta]` | スマホ下部の登録ボタン。最初の画面と `#join` が見えていないときだけ出す |
 | `#meetup`、`#acts`、`#join` | メニューの行き先 |
 
-Google 広告の計測タグは `_measure.html.j2` にあり、`content.yaml` の `measure` に ID があるときだけ両方のページに入ります。
+Google 広告の計測タグは `_measure.html.j2` にあり、`content.yaml` の `measure` に ID があるときだけ、すべてのページに入ります(コンバージョンは `thanks.html` だけ)。
+
+団体の情報のページ(`pages.yaml`)は `page.html.j2` で組み立てます。お礼ページと同じく、写真のない無地のページです。
 
 ## 画像
 

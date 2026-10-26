@@ -17,6 +17,7 @@ metadata:
 
 - `brand/<団体>/facts.md`:書いてよい事実と出典、決まっていないこと
 - `brand/<団体>/content.yaml`:いまの文面と写真の割り当て
+- `brand/<団体>/pages.yaml`:団体について、プライバシーポリシー、お問い合わせのページ(あれば)
 - `brand/<団体>/design.md`:その団体で決めたデザイン(あれば)
 
 依頼の内容に応じて、次も読みます。
@@ -37,7 +38,7 @@ metadata:
    - 使う写真と、写る人の同意
    - 公開すること
 2. **新しい団体なら、フォルダを用意する。** `${CLAUDE_SKILL_DIR}/assets/brand-template/` を `brand/<団体>/` にコピーし、`facts.md` に出典つきで事実を書いてから、`content.yaml` の TODO を書き換える。
-3. **`content.yaml` を直す。** 事実は `facts.md` の表にあるものだけを使う。表にない事実が要るときは、出典を確かめて `facts.md` に行を足してから使う。
+3. **`content.yaml` を直す。** 事実は `facts.md` の表にあるものだけを使う。表にない事実が要るときは、出典を確かめて `facts.md` に行を足してから使う。団体の情報のページは `pages.yaml` に書く。プライバシーポリシーは下書き(`draft: true`)のまま渡し、団体に確かめてもらう。
 4. **写真を差し替えるときは**、`python3 "${CLAUDE_SKILL_DIR}/scripts/images.py" grade 元の写真.jpg brand/<団体>/photos/<名前>.jpg` で色調をそろえて置き、`content.yaml` の `alt`、`caption`、`focal`、`credits` を写真に合わせて直す。
 5. **組み立てる。**
 
@@ -72,7 +73,7 @@ metadata:
 
 | スクリプト | 役割 |
 | --- | --- |
-| `scripts/build_site.py` | `content.yaml` と写真から、`index.html`、`thanks.html`、CSS、JS、画像、README を書き出す。内容の誤り(写真がない、alt がない、見出しが長すぎるなど)も調べる |
+| `scripts/build_site.py` | `content.yaml` と写真から、`index.html`、`thanks.html`、CSS、JS、画像、README を書き出す。`pages.yaml` があれば、団体の情報のページ(`about.html` など)も書き出す。内容の誤り(写真がない、alt がない、見出しが長すぎる、リンク先のページがないなど)も調べる |
 | `scripts/images.py grade` | 写真に D3 の共通の色調をかける |
 | `scripts/images.py export` | 1枚を幅ごとに AVIF・WebP・JPEG で書き出す(`build_site.py` の中でも使う) |
 

@@ -117,9 +117,9 @@ async function pageChecks(page) {
     if (hits.length) add(WARN, '日本語', `和文の中に半角のかっこやコロンがあります: ${hits.map((h) => `「${h}」`).join(' ')}`);
 
     // 大見出しの書体で palt が効くか
-    // テンプレートが見出しの約物を個別に詰めている(.pt)ときは、確かめ済みなので出さない
+    // テンプレートが見出しの約物を個別に詰めている(.pt)ときと、見出しに約物がないときは出さない
     const h1 = h1s[0];
-    if (h1 && !h1.querySelector('.pt')) {
+    if (h1 && !h1.querySelector('.pt') && /[、。，．「」『』（）]/.test(h1.textContent)) {
       const cs = getComputedStyle(h1);
       const probe = (feature) => {
         const s = document.createElement('span');
@@ -184,7 +184,8 @@ async function viewportChecks(page, vp) {
     }
 
     const screens = document.documentElement.scrollHeight / window.innerHeight;
-    if (vp.name === 'phone' && screens > 9.5) add(WARN, '長さ', `スマホで ${screens.toFixed(1)} 画面あります(目安は7〜9画面)`);
+    // 長さの目安は参加登録ページ(最初の画面に写真があるページ)だけに当てる
+    if (vp.name === 'phone' && document.querySelector('.hero') && screens > 9.5) add(WARN, '長さ', `スマホで ${screens.toFixed(1)} 画面あります(目安は7〜9画面)`);
 
     // 押せるところの大きさ(文中のリンクは除く)
     if (vp.width <= 820) {

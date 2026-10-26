@@ -7,7 +7,8 @@
   --skip-images   書き出し済みの写真を使い回す(文面だけ直したとき。足りない写真だけ書き出す)
   --no-avif       AVIF を書き出さない(Pillow が AVIF に対応していないとき)
 
-組み立てたあと、公開の前に決めること(仮の値、送信先、公開する URL、計測、facts.md の要確認の事実)と、
+brand/<団体>/pages.yaml があれば、団体の情報のページ(about.html など)も組み立てる。
+組み立てたあと、公開の前に決めること(仮の値、送信先、公開する URL、計測、下書きのページ、facts.md の要確認の事実)と、
 行き先のないリンク(href="#")を一覧にして表示する。
 必要なもの: Python 3.9 以上、Pillow、PyYAML、Jinja2(色調をかけるときは numpy)。
 """
@@ -72,7 +73,13 @@ SHAPE = {
     "og_image": {"photo": TEXT, "y": NUM},
     "credits": {"note": TEXT, "items": [{"use": TEXT, "author": TEXT, "works": [{"title": TEXT, "url": TEXT}],
                                          "license": TEXT, "license_url": TEXT}]},
+    # pages.yaml から読む、団体の情報のページ。名前(about など)がファイル名(about.html)になる
+    "pages": {"*": {"draft": FLAG, "title": TEXT, "heading": TEXT, "lead": TEXT, "footnote": TEXT,
+                    "sections": [{"heading": TEXT, "paragraphs": [TEXT], "items": [TEXT],
+                                  "details": [{"label": TEXT, "value": TEXT}], "notes": [TEXT]}]}},
 }
+# pages.yaml のページの名前に使えないもの(ほかのページと重なる)
+RESERVED_PAGES = {"index", "thanks"}
 
 
 class BuildError(Exception):
@@ -126,7 +133,8 @@ def check_shape(node, shape, path=()) -> list[str]:
     if isinstance(shape, list):
         if not isinstance(node, list):
             return [f"{where} はリストで書きます(1つずつ「- 」で始める)"]
-        return [e for i, v in enumerate(node) for e in check_shape(v, shape[0], path + (i,))]
+        empty = [f"{where}.{i} が空です(「- 」だけの行を消すか、中身を書く)" for i, v in enumerate(node) if v is None]
+        return empty + [e for i, v in enumerate(node) if v is not None for e in check_shape(v, shape[0], path + (i,))]
     is_num = isinstance(node, (int, float)) and not isinstance(node, bool)
     ok = {TEXT: isinstance(node, str), FLAG: isinstance(node, bool), NUM: is_num,
           INT: is_num and isinstance(node, int)}[shape]
@@ -145,6 +153,11 @@ def describe(path: tuple, c: dict) -> str:
             return f"「{c['meetup']['heading']}」の「{c['meetup']['details'][path[2]]['label']}」"
         if path[:2] == ("faq", "items"):
             return f"よくある質問「{c['faq']['items'][path[2]]['q']}」"
+        if path[0] == "pages":
+            page = c["pages"][path[1]]
+            if len(path) > 3 and path[2] == "sections":
+                return f"ページ「{page['heading']}」の「{page['sections'][path[3]]['heading']}」"
+            return f"ページ「{page['heading']}」"
         if path[0] in ("meetup", "mission", "steps", "promises", "join", "activities"):
             heading = c[path[0]].get("heading", path[0])
             return f"「{heading}」"
@@ -246,6 +259,19 @@ def validate(c, brand: Path) -> list[str]:
         elif n["href"].startswith("#") and n["href"] not in targets:
             errors.append(f"メニュー「{n['label']}」の行き先 {n['href']} がページにありません")
 
+    pages = c.get("pages") or {}
+    for slug, page in pages.items():
+        if not re.fullmatch(r"[a-z0-9][a-z0-9-]*", str(slug)) or slug in RESERVED_PAGES:
+            errors.append(f"pages.yaml のページの名前 {slug!r} は使えません(小文字の英数字とハイフン。index と thanks は使えない)")
+            continue
+        page = page or {}
+        for k in ("title", "heading"):
+            if not page.get(k):
+                errors.append(f"pages.yaml のページ {slug} に {k} がありません")
+        for i, s in enumerate(page.get("sections") or []):
+            if not s.get("heading"):
+                errors.append(f"pages.yaml のページ {slug} の sections の {i + 1} つ目に heading がありません")
+
     warnings.extend(check_weekdays(c))
 
     for path, s in walk_strings(c):
@@ -257,6 +283,24 @@ def validate(c, brand: Path) -> list[str]:
     if errors:
         raise BuildError("\n".join(errors))
     return warnings
+
+
+def page_files(c: dict) -> set[str]:
+    """組み立てる HTML のファイル名。"""
+    return {"index.html", "thanks.html"} | {f"{slug}.html" for slug in (c.get("pages") or {})}
+
+
+def check_links(c: dict, known: set[str]) -> None:
+    """同じフォルダのページ(about.html、./privacy.html など)へのリンクに、つなぎ先があるかを確かめる。"""
+    errors = []
+    for path, s in walk_strings(c):
+        hrefs = re.findall(r"""href=["']([^"']*)["']""", s) + ([s] if path and path[-1] == "href" else [])
+        for h in hrefs:
+            target = re.sub(r"^\./", "", re.split(r"[?#]", h)[0])
+            if re.fullmatch(r"[A-Za-z0-9_][A-Za-z0-9._-]*\.html", target) and target not in known:
+                errors.append(f"{describe(path, c)} のリンク先 {target} がありません(pages.yaml にページを書くか、リンクを直す)")
+    if errors:
+        raise BuildError("\n".join(errors))
 
 
 def _date_or_none(y: int, m: int, d: int) -> date | None:
@@ -328,6 +372,12 @@ def build(brand: Path, out: Path, skip_images: bool, use_avif: bool) -> dict:
         c = yaml.safe_load(content_path.read_text(encoding="utf-8"))
     except yaml.YAMLError as e:
         raise BuildError(f"content.yaml を読めません。字下げや引用符を確かめてください:\n{e}") from e
+    pages_path = brand / "pages.yaml"
+    if pages_path.exists() and isinstance(c, dict):
+        try:
+            c["pages"] = yaml.safe_load(pages_path.read_text(encoding="utf-8"))
+        except yaml.YAMLError as e:
+            raise BuildError(f"pages.yaml を読めません。字下げや引用符を確かめてください:\n{e}") from e
     warnings = validate(c, brand)
     c["site"]["lang"] = c["site"].get("lang") or "ja"
     c["site"]["theme_color"] = c["site"].get("theme_color") or "#ecebe8"
@@ -380,9 +430,21 @@ def build(brand: Path, out: Path, skip_images: bool, use_avif: bool) -> dict:
     c_safe = _Lenient(c)
     ctx["c"] = c_safe
 
-    html = env.get_template("index.html.j2").render(**ctx)
-    (out / "index.html").write_text(html, encoding="utf-8")
-    (out / "thanks.html").write_text(env.get_template("thanks.html.j2").render(**ctx), encoding="utf-8")
+    # すべてのページを組み立ててから書き出す。途中で止まっても、古い HTML と新しい HTML が混ざらない
+    pages = c.get("pages") or {}
+    rendered = {"index.html": env.get_template("index.html.j2").render(**ctx),
+                "thanks.html": env.get_template("thanks.html.j2").render(**ctx)}
+    for slug in pages:
+        rendered[f"{slug}.html"] = env.get_template("page.html.j2").render(**ctx, page=c_safe["pages"][slug])
+    # 手で置いたページ(書き出し先にある HTML)へのリンクは認める
+    existing = {p.name for p in out.glob("*.html")}
+    check_links(c, page_files(c) | existing)
+    for name, text in rendered.items():
+        (out / name).write_text(text, encoding="utf-8")
+    # pages.yaml から消したページの HTML が残っていると、そのまま公開されてしまう
+    stale = sorted(existing - page_files(c))
+    if stale:
+        warnings.append(f"書き出し先に、今回は組み立てていない HTML があります: {'、'.join(stale)}。前に組み立てたページなら消します")
 
     for rel in ("assets/css/style.css", "assets/js/main.js"):
         (out / rel).parent.mkdir(parents=True, exist_ok=True)
@@ -394,7 +456,7 @@ def build(brand: Path, out: Path, skip_images: bool, use_avif: bool) -> dict:
     for path, s in walk_strings(c):
         for m in PLACEHOLDER.finditer(re.sub(r"<[^>]+>", "", s)):
             placeholders.append({"where": describe(path, c), "text": m.group(0)})
-    hash_links = sorted(set(re.findall(r'<a href="#">([^<]+)</a>', html)))
+    hash_links = sorted({m for h in rendered.values() for m in re.findall(r'<a href="#">([^<]+)</a>', h)})
     before_publish = []
     if not c["join"].get("endpoint"):
         before_publish.append("参加登録の送信先(join.endpoint)が空です。いまは登録がどこにも届きません")
@@ -402,6 +464,9 @@ def build(brand: Path, out: Path, skip_images: bool, use_avif: bool) -> dict:
         before_publish.append("公開する URL(site.url)が空です。SNS で共有したときの画像と og:url が出ません")
     if not (c.get("measure") or {}).get("google_tag_id"):
         before_publish.append("Google 広告の計測(measure)が空です。Ad Grants ではコンバージョンの計測が要ります")
+    for slug, page in pages.items():
+        if page.get("draft"):
+            before_publish.append(f"ページ「{page['heading']}」({slug}.html)は下書きです。団体で内容を確かめてから、pages.yaml の draft: true を消します")
     unconfirmed = unconfirmed_facts(brand)
 
     where = {c["hero"]["photo"]: "パソコンの最初の画面", c["hero"]["photo_phone"]: "スマホの最初の画面"}
@@ -423,6 +488,8 @@ def build(brand: Path, out: Path, skip_images: bool, use_avif: bool) -> dict:
         build_script=_rel(script, root) if build_script_local else "<lp-build>/scripts/build_site.py",
         build_script_local=build_script_local,
         placeholders=placeholders, hash_links=hash_links, photo_rows=photo_rows, unconfirmed=unconfirmed,
+        pages=[{"file": f"{slug}.html", "heading": p["heading"], "draft": bool(p.get("draft"))}
+               for slug, p in pages.items()],
         credits=bool((c.get("credits") or {}).get("items")))
     (out / "README.md").write_text(readme, encoding="utf-8")
 
