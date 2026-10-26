@@ -20,7 +20,7 @@
 
 ## 場所
 
-- `brand/<団体>/`:団体ごとの事実(`facts.md`)、文面(`content.yaml`)、デザインの決まり(`design.md`)、写真(`photos/`)
+- `brand/<団体>/`:団体ごとの事実(`facts.md`)、文面(`content.yaml`)、団体の情報のページ(`pages.yaml`)、デザインの決まり(`design.md`)、写真(`photos/`)、Google 広告の案(`ads.md`)、集まりの進め方の案(`meetup.md`)。ページの文面を変えたら、`ads.md` の広告の文とキーワードも見直す
 - `sites/<団体>-lp/`:組み立てたページ。`content.yaml` から作るので、手で直さない
 - `docs/reports/`:構想の整理レポートとデザインリサーチ
 
@@ -47,4 +47,7 @@ python3 plugins/lp-designer/skills/lp-build/scripts/build_site.py --brand brand/
 # 点検する(別の端末でサーバーを立ててから)
 python3 -m http.server 8000 --directory sites/opencoral-lp
 node plugins/lp-designer/skills/design-review/scripts/review.js http://localhost:8000/ review
+
+# 広告の案を点検する(--write で字数の列を数え直す)
+python3 scripts/check_ads.py brand/opencoral/ads.md --site sites/opencoral-lp
 ```

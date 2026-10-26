@@ -9,6 +9,7 @@
 #     <br>                        改行
 #     <a href="…">…</a>          リンク
 # - 書き換えたら: python3 plugins/lp-designer/skills/lp-build/scripts/build_site.py --brand brand/opencoral --out sites/opencoral-lp
+# - Google 広告の文とキーワード(brand/opencoral/ads.md)は、この文面とそろえてある。文面を変えたら、広告の文も見直す
 
 site:
   lang: ja
