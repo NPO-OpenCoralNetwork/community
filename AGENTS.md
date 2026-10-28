@@ -50,4 +50,7 @@ node plugins/lp-designer/skills/design-review/scripts/review.js http://localhost
 
 # 広告の案を点検する(--write で字数の列を数え直す)
 python3 scripts/check_ads.py brand/opencoral/ads.md --site sites/opencoral-lp
+
+# 団体の名前で出す文章(ページ、広告、メール)の言葉を点検する
+python3 scripts/check_wording.py brand/opencoral
 ```
