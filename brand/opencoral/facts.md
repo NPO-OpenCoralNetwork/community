@@ -18,6 +18,7 @@
 | 活動の柱は Civic AI・サードプレイス拠点・自立循環エコシステムの3つ | 目的の文で「AIを道具に」「居場所づくり」「報酬を払う仕組み」と言い換える | `open-coral-handbook/index.mdx` |
 | 主たる事務所は富山県と東京都 | 書かない。所在地は番地まで要るので `[所在地]` のまま。登記どおりの住所を運営に確かめる | `open-coral-handbook/index.mdx` |
 | 居場所(サードプレイス)と循環する仕組みは、まだ構想の段階 | 「取り組みます」「一緒につくります」と書く。場所がすでにあるとは書かない | `docs/reports/concept-report.md` |
+| Google for Nonprofits に登録し、Google Ad Grants を有効にしてある | ページには書かない。新しいドメインは、Ad Grants の「追加のウェブサイト ドメイン」として申請する | 依頼(2026-10-28、運営チームから) |
 
 ## 活動
 
@@ -37,7 +38,7 @@
 | 基本的な参加は無料 | 「参加登録は無料です」。**要確認**:2024年の旧案の記述。公開前に運営が確かめる | `npo-open-community/site/community.html` |
 | 参加したら、チャットで自己紹介(興味のある分野、得意なこと、参加のきっかけ)を書く | 「参加者のチャットに入り、興味のあることや得意なこと、参加のきっかけを書きます」 | `open-coral-handbook/participation/onboarding.mdx` |
 | チャットが Discord か Slack かは決まっていない | 「チャット」とだけ書く | `docs/reports/concept-report.md` |
-| 受付、プロンプトのテスト、校正などの小さな作業に自分から手を挙げる | 「イベントの受付や資料の校正、AIへの指示文を試す作業など、小さなことから始められます」 | `open-coral-handbook/participation/onboarding.mdx` |
+| 受付、プロンプトのテスト、校正などの小さな作業に自分から手を挙げる | 「集まりの受付や資料の校正、AIへの指示文を試す作業など、小さなことから始められます」 | `open-coral-handbook/participation/onboarding.mdx` |
 | ノルマや固定的な役割はない | 「ノルマや決まった役割はありません」 | `open-coral-handbook/participation/onboarding.mdx` |
 | 出入り自由 | 「いつでもやめられます。出入りは自由です」 | `open-coral-handbook/foundation/mission-charter.mdx` |
 
@@ -88,7 +89,7 @@
 - コミュニティの名前(決まるまでは団体名を表示する)
 - 次の集まりの日時、会場、参加費
 - 集まりの進め方と所要時間、オンラインで参加できるか
-- 定例イベントの頻度とテーマ
+- 定例の集まりの頻度とテーマ
 - 「団体について」「プライバシーポリシー」「お問い合わせ」のページの内容の確定(下書きは `pages.yaml`)
 - 所在地(番地まで)、代表者の役職と氏名、設立年月日
 - 問い合わせ先のメールアドレス
