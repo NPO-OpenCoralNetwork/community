@@ -1,6 +1,6 @@
 # 大多喜町 空き家・空き地バンクの利用登録
 
-- 決めたこと:登録する(回答、2026-11-05)。登録の手続きは人が行う。エージェントは送らない
+- 決めたこと:登録する(回答、2026-11-05)。そのあと、交通の調査を受けて、**いまは止める**(回答、2026-11-05)。普通列車と路線バスでは東京駅まで2時間41分かかり、21時の集まりから帰れないため。大多喜町は予備にし、いすみ鉄道が戻ったら(2027年秋ごろの見込み)見直す
 - 目的:P-028(No.98)、P-014(No.135)、P-013(No.141)の見学と問い合わせ
 - 出典:[物件情報のページ](https://www.town.otaki.chiba.jp/kanko_iju_bunka/kanko_iju/ijyu/2/1146.html)、[仕組みと利用の流れ](https://www.town.otaki.chiba.jp/kanko_iju_bunka/kanko_iju/ijyu/2/1135.html)、[利用希望者登録申込書と誓約書(PDF)](https://www.town.otaki.chiba.jp/material/files/group/5/akiyaformuse_pdf.pdf)、[制度要綱(PDF)](https://www.town.otaki.chiba.jp/material/files/group/5/akiyaseidoyoukou.pdf)。どれも 2026-11-05 に開いて確かめた
 
