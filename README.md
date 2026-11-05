@@ -13,6 +13,8 @@ community/
 ├─ brand/opencoral/        団体の事実(出典つき)、文面、デザインの決まり、写真
 ├─ sites/opencoral-lp/     組み立てたページ(公開するファイル一式)
 ├─ docs/reports/           構想の整理レポート、デザインリサーチ
+├─ projects/akiya-hub/     空き家活用・コミュニティ拠点プロジェクト(企画書、データ、調査レポート)
+├─ .claude/agents/         Claude Code のサブエージェント(空き家活用・コミュニティ拠点プロジェクトの担当)
 ├─ .claude-plugin/         Claude Code 用のマーケットプレイスの定義
 ├─ .agents/plugins/        Codex 用のマーケットプレイスの定義
 ├─ .claude/skills/         Claude Code 用のリンク(中身は plugins/lp-designer/skills/)
@@ -32,6 +34,10 @@ community/
 名前を指定して呼ぶこともできます。Claude Code では `/lp-build`、`/design-review`、Codex では `$lp-build`、`$design-review` です。
 
 エージェントは、事実を `brand/opencoral/facts.md` から取り、決まっていないことは聞くか仮の値のまま残します。ページは `brand/opencoral/content.yaml` から組み立て、スクリーンショットと自動の点検で確かめてから報告します。
+
+## 空き家活用・コミュニティ拠点プロジェクト
+
+東京近郊の空き家で、代表者の住居と、音楽・アート・AI・地域交流を行うコミュニティ拠点を確保するプロジェクトも、ここで進めています。物件、自治体の制度、交通、資金の調査と、問い合わせの準備を、Claude Code のサブエージェントに分けて任せます。動かし方は [projects/akiya-hub/README.md](projects/akiya-hub/README.md) にあります。
 
 ## ほかのリポジトリで使う
 

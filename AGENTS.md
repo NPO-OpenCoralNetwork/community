@@ -18,8 +18,18 @@
 - 変えたら `claude plugin validate plugins/lp-designer` と `claude plugin validate .` で確かめる。
 - このリポジトリでは、同じスキルが2つ並ばないよう、プラグインを無効にしてある(`.claude/settings.json`)。それでもプラグイン版(`lp-designer:lp-build` など)が読み込まれているときは、使わない。使うのはリンクから読み込まれる `lp-build`、`design-review`(手元の変更が入っているほう)。
 
+## 空き家活用・コミュニティ拠点プロジェクト
+
+東京近郊の空き家で、代表者の住居とコミュニティ拠点を確保するプロジェクトの作業場を `projects/akiya-hub/` に置いています。
+
+- **このプロジェクトの作業を頼まれたら、始める前に `projects/akiya-hub/CLAUDE.md` を読み、その指示に従う。** メインのセッションが、そこに書いた「メインエージェント」になる。
+- 調査と問い合わせの準備は、`.claude/agents/` のサブエージェント(`property-researcher`、`municipality-researcher`、`access-researcher`、`funding-researcher`、`outreach-manager`)に任せる。
+- 動かし方は [projects/akiya-hub/README.md](projects/akiya-hub/README.md)。
+
 ## 場所
 
+- `projects/akiya-hub/`:空き家活用・コミュニティ拠点プロジェクトの企画書、データ、調査レポート、問い合わせ文の下書き
+- `.claude/agents/`:Claude Code のサブエージェントの設定(いまは空き家活用・コミュニティ拠点プロジェクトの担当だけ)
 - `brand/<団体>/`:団体ごとの事実(`facts.md`)、文面(`content.yaml`)、団体の情報のページ(`pages.yaml`)、デザインの決まり(`design.md`)、写真(`photos/`)、Google 広告の案(`ads.md`)、集まりの進め方の案(`meetup.md`)、参加者に送るメールの文面(`emails.md`)。ページの文面を変えたら、`ads.md` の広告の文とキーワードも見直す
 - `sites/<団体>-lp/`:組み立てたページ。`content.yaml` から作るので、手で直さない
 - `docs/reports/`:構想の整理レポートとデザインリサーチ
